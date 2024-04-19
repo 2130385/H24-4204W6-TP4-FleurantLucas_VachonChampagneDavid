@@ -42,9 +42,29 @@ namespace PostHubAPI.Controllers
         [Authorize]
         public async Task<ActionResult<PostDisplayDTO>> PostPost(int hubId)
         {
-            var file = Request.Form.Files;
+            var files = Request.Form.Files;
             var title = Request.Form["title"];
             var text = Request.Form["text"];
+            List<Picture> pictures = new List<Picture>();
+
+            foreach (var formFile in files)
+            {
+
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(formFile.FileName);
+                var filePath = Path.Combine("path/to/save/images", fileName); // Specify the directory where you want to save images
+
+                using (var stream = new MemoryStream())
+                {
+                    await formFile.CopyToAsync(stream);
+                    var picture = new Picture
+                    {
+                        FileName = formFile.FileName,
+                        MimeType = formFile.ContentType
+                    };
+                    
+                    pictures.Add(picture);
+                }
+            }
 
 
             User? user = await _userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
@@ -53,7 +73,7 @@ namespace PostHubAPI.Controllers
             Hub? hub = await _hubService.GetHub(hubId);
             if (hub == null) return NotFound();
 
-            Comment? mainComment = await _commentService.CreateComment(user, text, null);
+            Comment? mainComment = await _commentService.CreateComment(user, text, null, pictures);
             if (mainComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
 
             Post? post = await _postService.CreatePost(title, hub, mainComment);
@@ -91,13 +111,15 @@ namespace PostHubAPI.Controllers
         [Authorize]
         public async Task<ActionResult<CommentDisplayDTO>> PostComment(int parentCommentId, CommentDTO commentDTO)
         {
+            List<Picture> pictures = new List<Picture>();
+
             User? user = await _userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
             if (user == null) return Unauthorized();
 
             Comment? parentComment = await _commentService.GetComment(parentCommentId);
             if (parentComment == null || parentComment.User == null) return BadRequest();
 
-            Comment? newComment = await _commentService.CreateComment(user, commentDTO.Text, parentComment);
+            Comment? newComment = await _commentService.CreateComment(user, commentDTO.Text, parentComment, pictures);
             if(newComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
 
             bool voteToggleSuccess = await _commentService.UpvoteComment(newComment.Id, user);

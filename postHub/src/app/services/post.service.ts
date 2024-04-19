@@ -13,21 +13,21 @@ export class PostService {
 
   // Obtenir une liste de posts en triant par nouveauté / popularité
   async getPostList(tab : string, sorting : string) : Promise<Post[]>{
-    let x = await lastValueFrom(this.http.get<Post[]>("https://localhost:7007/api/Comments/GetPosts/" + tab + "/" + sorting));
+    let x = await lastValueFrom(this.http.get<Post[]>("http://localhost:7007/api/Comments/GetPosts/" + tab + "/" + sorting));
     console.log(x);
     return x;
   }
 
   // Obtenir tous les posts d'un hub triés par nouveauté / popularité
   async getHubPosts(hubId : number, sorting : string) : Promise<Post[]>{
-    let x = await lastValueFrom(this.http.get<Post[]>("https://localhost:7007/api/Comments/GetHubPosts/" + hubId + "/" + sorting));
+    let x = await lastValueFrom(this.http.get<Post[]>("http://localhost:7007/api/Comments/GetHubPosts/" + hubId + "/" + sorting));
     console.log(x);
     return x;
   }
 
   // Recherche des posts avec la barre du header (la phrase utilisée est chercher dans les titres des posts et dans les commentaires principaux des posts)
   async searchPosts(searchText : string, sorting : string) : Promise<Post[]>{
-    let x = await lastValueFrom(this.http.get<Post[]>("https://localhost:7007/api/Comments/SearchPosts/" + searchText + "/" + sorting));
+    let x = await lastValueFrom(this.http.get<Post[]>("http://localhost:7007/api/Comments/SearchPosts/" + searchText + "/" + sorting));
     console.log(x);
     return x;
   }
@@ -35,14 +35,14 @@ export class PostService {
   // Créer un post
   async postPost(hubId : number, formData : any) : Promise<Post>{
    
-    let x = await lastValueFrom(this.http.post<any>("https://localhost:7007/api/Comments/PostPost/" + hubId, formData));
+    let x = await lastValueFrom(this.http.post<any>("http://localhost:7007/api/Comments/PostPost/" + hubId, formData));
     console.log(x);
     return x;
   }
 
   // Obtenir un post précis et tous ses commentaires classés par nouveauté / popularité
   async getPost(postId : number, sorting : string) : Promise<Post>{
-    let x = await lastValueFrom(this.http.get<Post>("https://localhost:7007/api/Comments/GetFullPost/" + postId + "/" + sorting));
+    let x = await lastValueFrom(this.http.get<Post>("http://localhost:7007/api/Comments/GetFullPost/" + postId + "/" + sorting));
     console.log(x);
     return x;
   }

@@ -49,14 +49,12 @@ export class CommentComponent implements OnInit {
       return;
     }
 
+    const formData = new FormData();
+
     if(this.comment == null) return;
     if(this.comment.subComments == null) this.comment.subComments = [];
 
-    let commentDTO = {
-      text : this.newComment
-    }
-
-    this.comment.subComments.push(await this.postService.postComment(commentDTO, this.comment.id));
+    this.comment.subComments.push(await this.postService.postComment(formData, this.comment.id));
     
     this.replyToggle = false;
     this.repliesToggle = true;

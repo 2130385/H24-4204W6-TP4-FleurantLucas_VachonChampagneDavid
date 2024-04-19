@@ -67,12 +67,12 @@
   <div id="commentBox">
     <input type="text" name="newComment" id="newComment" placeholder="Ajouter un commentaire" [(ngModel)]="newComment">
     <div *ngIf="displayInputFile" class="commentPictureAdd">
-      <input type="file" accept="images/*" name="commentPictures">
+      <input type="file" accept="image/*" name="commentPictures" multiple (change)="onImageSelected($event)">
     </div>
     <button (click)="displayInputFile = !displayInputFile"><fa-icon [icon]="faImage"></fa-icon></button>
     <button (click)="createComment()">Ajouter</button>
   </div>
-
+  
   <!-- Liste de commentaires -->
   <div class="comment" *ngFor="let c of post.mainComment!.subComments">
     <app-comment [comment]="c" ></app-comment>

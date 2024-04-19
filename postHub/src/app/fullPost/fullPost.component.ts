@@ -16,6 +16,8 @@ export class FullPostComponent implements OnInit {
   sorting : string = "popular";
   newComment : string = "";
   newMainCommentText : string = "";
+  selectedImages: File[] = [];
+  imagePreviews: string[] = [];
 
   // Booléens sus pour cacher / afficher des boutons
   isAuthor : boolean = false;
@@ -45,6 +47,25 @@ export class FullPostComponent implements OnInit {
     this.isAuthor = localStorage.getItem("username") == this.post?.mainComment?.username;
   }
 
+  onImageSelected(event: any) {
+    const files: FileList = event.target.files;
+    for (let i = 0; i < files.length; i++) {
+      const file: File | null = files.item(i);
+      if (file) {
+        // Read the file as a data URL
+        const reader = new FileReader();
+        reader.onload = () => {
+          // Add the data URL to the array
+          this.imagePreviews.push(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  }
+  
+
+  
+
   async toggleSorting(){
     if(this.post == null) return;
     this.post = await this.postService.getPost(this.post.id, this.sorting);
@@ -57,13 +78,17 @@ export class FullPostComponent implements OnInit {
       return;
     }
 
-    let commentDTO = {
-      text : this.newComment
+    const formData = new FormData();
+    formData.append('text', this.newComment);
+  
+    for (const image of this.selectedImages) {
+      formData.append('images', image);
     }
 
-    this.post?.mainComment?.subComments?.push(await this.postService.postComment(commentDTO, this.post.mainComment.id));
+    this.post?.mainComment?.subComments?.push(await this.postService.postComment(formData, this.post.mainComment.id));
 
     this.newComment = "";
+    this.selectedImages = [];
   }
 
   // Upvote le commentaire principal du post

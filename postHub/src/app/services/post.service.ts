@@ -50,7 +50,7 @@ export class PostService {
   // Modifier un commentaire (que ce soit le commentaire principal d'un post ou un sous-commentaire)
   async editComment(dto : any, commentId : number) : Promise<Comment>{
 
-    let x = await lastValueFrom(this.http.put<any>("https://localhost:7007/api/Comments/PutComment/" + commentId, dto));
+    let x = await lastValueFrom(this.http.put<any>("http://localhost:7007/api/Comments/PutComment/" + commentId, dto));
     console.log(x);
     return x;
 
@@ -59,7 +59,7 @@ export class PostService {
   // Créer un sous-commentaire (donc tous les commentaires qui ne sont pas le commentaire principal d'un post)
   async postComment(dto : any, parentCommentId : number) : Promise<Comment>{
 
-    let x = await lastValueFrom(this.http.post<any>("https://localhost:7007/api/Comments/PostComment/" + parentCommentId, dto));
+    let x = await lastValueFrom(this.http.post<any>("http://localhost:7007/api/Comments/PostComment/" + parentCommentId, dto));
     console.log(x);
     return x;
 
@@ -68,20 +68,20 @@ export class PostService {
   // Supprimer un commentaire (que ce soit le commentaire principal d'un post ou un sous-commentaire)
   async deleteComment(commentId : number) : Promise<void>{
 
-    let x = await lastValueFrom(this.http.delete<any>("https://localhost:7007/api/Comments/DeleteComment/" + commentId));
+    let x = await lastValueFrom(this.http.delete<any>("http://localhost:7007/api/Comments/DeleteComment/" + commentId));
     console.log(x);
 
   }
 
   // Upvote un commentaire (que ce soit le commentaire principal d'un post ou un sous-commentaire)
   async upvote(commentId : number){
-    let x = await lastValueFrom(this.http.put<any>("https://localhost:7007/api/Comments/UpvoteComment/" + commentId, null));
+    let x = await lastValueFrom(this.http.put<any>("http://localhost:7007/api/Comments/UpvoteComment/" + commentId, null));
     console.log(x);
   }
 
   // Downvote un commentaire (que ce soit le commentaire principal d'un post ou un sous-commentaire)
   async downvote(commentId : number){
-    let x = await lastValueFrom(this.http.put<any>("https://localhost:7007/api/Comments/DownvoteComment/" + commentId, null));
+    let x = await lastValueFrom(this.http.put<any>("http://localhost:7007/api/Comments/DownvoteComment/" + commentId, null));
     console.log(x);
   }
 

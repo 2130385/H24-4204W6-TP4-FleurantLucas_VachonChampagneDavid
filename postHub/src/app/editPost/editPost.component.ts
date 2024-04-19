@@ -16,6 +16,7 @@ export class EditPostComponent implements OnInit {
   hub : Hub | null = null;
   postTitle : string = "";
   postText : string = "";
+  @ViewChild("myPictureViewChild", {static:false}) picturesInput ?: ElementRef;
 
   // Icônes Font Awesome
   faEllipsis = faEllipsis;
@@ -41,12 +42,25 @@ export class EditPostComponent implements OnInit {
     }
     if(this.hub == null) return;
 
+    let formData = new FormData();
+    if(this.picturesInput == undefined){console.log("Input HTML non chargé")}
+
+    let file = this.picturesInput?.nativeElement.files[0];
+    if(file == null){
+      console.log("Input HTML ne contient aucune image.")
+    }
+    formData.append("title", this.postTitle);
+    formData.append("text", this.postText);
+    formData.append("image", file, file.name);
+
     let postDTO = {
       title : this.postTitle,
       text : this.postText
-    };
+    }; 
 
-    let newPost : Post = await this.postService.postPost(this.hub.id, postDTO);
+    // let newPost : Post = await this.postService.postPost(this.hub.id, postDTO);
+    
+    let newPost : Post = await this.postService.postPost(this.hub.id, formData);
 
     // On se déplace vers le nouveau post une fois qu'il est créé
     this.router.navigate(["/post", newPost.id]);

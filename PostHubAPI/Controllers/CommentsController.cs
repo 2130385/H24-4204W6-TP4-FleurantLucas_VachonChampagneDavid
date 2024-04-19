@@ -40,25 +40,52 @@ namespace PostHubAPI.Controllers
 
         [HttpPost("{hubId}")]
         [Authorize]
-        public async Task<ActionResult<PostDisplayDTO>> PostPost(int hubId, PostDTO postDTO)
+        public async Task<ActionResult<PostDisplayDTO>> PostPost(int hubId)
         {
+            var file = Request.Form.Files;
+            var title = Request.Form["title"];
+            var text = Request.Form["text"];
+
+
             User? user = await _userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
             if (user == null) return Unauthorized();
 
             Hub? hub = await _hubService.GetHub(hubId);
             if (hub == null) return NotFound();
 
-            Comment? mainComment = await _commentService.CreateComment(user, postDTO.Text, null);
-            if(mainComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
+            Comment? mainComment = await _commentService.CreateComment(user, text, null);
+            if (mainComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
 
-            Post? post = await _postService.CreatePost(postDTO.Title, hub, mainComment);
-            if(post == null) return StatusCode(StatusCodes.Status500InternalServerError);
+            Post? post = await _postService.CreatePost(title, hub, mainComment);
+            if (post == null) return StatusCode(StatusCodes.Status500InternalServerError);
 
             bool voteToggleSuccess = await _commentService.UpvoteComment(mainComment.Id, user);
-            if(!voteToggleSuccess) return StatusCode(StatusCodes.Status500InternalServerError);
+            if (!voteToggleSuccess) return StatusCode(StatusCodes.Status500InternalServerError);
 
             return Ok(new PostDisplayDTO(post, true, user));
         }
+
+        //[HttpPost("{hubId}")]
+        //[Authorize]
+        //public async Task<ActionResult<PostDisplayDTO>> PostPost(int hubId, PostDTO postDTO)
+        //{
+        //    User? user = await _userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        //    if (user == null) return Unauthorized();
+
+        //    Hub? hub = await _hubService.GetHub(hubId);
+        //    if (hub == null) return NotFound();
+
+        //    Comment? mainComment = await _commentService.CreateComment(user, postDTO.Text, null);
+        //    if(mainComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
+
+        //    Post? post = await _postService.CreatePost(postDTO.Title, hub, mainComment);
+        //    if(post == null) return StatusCode(StatusCodes.Status500InternalServerError);
+
+        //    bool voteToggleSuccess = await _commentService.UpvoteComment(mainComment.Id, user);
+        //    if(!voteToggleSuccess) return StatusCode(StatusCodes.Status500InternalServerError);
+
+        //    return Ok(new PostDisplayDTO(post, true, user));
+        //}
 
         [HttpPost("{parentCommentId}")]
         [Authorize]

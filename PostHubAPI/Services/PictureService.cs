@@ -16,5 +16,17 @@ namespace PostHubAPI.Services
         }
 
         private bool IsContextNull() => _context.Pictures == null;
+
+        public async Task<List<Picture>> AddPicturesAsync(List<Picture> pictures, Comment comment)
+        {
+            List<Picture> returnPictures = new List<Picture>();
+            foreach (Picture picture in pictures)
+            {
+                picture.Comment = comment;
+                await _context.Pictures.AddAsync(picture);
+                returnPictures.Add(picture);
+            }
+            return returnPictures;
+        }
     }
 }

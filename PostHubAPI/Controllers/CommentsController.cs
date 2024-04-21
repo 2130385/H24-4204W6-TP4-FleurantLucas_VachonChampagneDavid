@@ -73,8 +73,8 @@ namespace PostHubAPI.Controllers
             if (mainComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
             
             //Ajout des images//
-            List<Picture>? picturesReturn = await _pictureService.AddPicturesAsync(pictures, mainComment);
-            if (picturesReturn.Count == 0 && pictures.Count != 0) return StatusCode(StatusCodes.Status500InternalServerError);
+            //List<Picture>? picturesReturn = await _pictureService.AddPicturesAsync(pictures, mainComment);
+            //if (picturesReturn.Count == 0 && pictures.Count != 0) return StatusCode(StatusCodes.Status500InternalServerError);
 
             Post ? post = await _postService.CreatePost(title, hub, mainComment);
             if (post == null) return StatusCode(StatusCodes.Status500InternalServerError);

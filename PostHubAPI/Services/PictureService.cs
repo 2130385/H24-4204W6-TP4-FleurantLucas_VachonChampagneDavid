@@ -26,6 +26,7 @@ namespace PostHubAPI.Services
                 await _context.Pictures.AddAsync(picture);
                 returnPictures.Add(picture);
             }
+            await _context.SaveChangesAsync();
             return returnPictures;
         }
     }

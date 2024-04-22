@@ -51,7 +51,15 @@ export class EditPostComponent implements OnInit {
     }
     formData.append("title", this.postTitle);
     formData.append("text", this.postText);
-    formData.append("image", file, file.name);
+    // formData.append("image", file, file.name);
+    let files = this.picturesInput?.nativeElement.files;
+  if (files === null || files.length === 0) {
+    console.log("Input HTML ne contient aucune image.")
+  } else {
+    for (let i = 0; i < files.length; i++) {
+      formData.append("images", files[i], files[i].name);
+    }
+  }
 
     let postDTO = {
       title : this.postTitle,

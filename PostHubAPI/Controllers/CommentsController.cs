@@ -52,13 +52,23 @@ namespace PostHubAPI.Controllers
             {
                 foreach (var formFile in files)
                 {
-                    Image image = Image.Load(formFile.OpenReadStream());
-                    Picture picture = new Picture();
-                    picture.FileName = Guid.NewGuid().ToString() + Path.GetExtension(formFile.FileName);
-                    picture.MimeType = formFile.ContentType;
+                    //Image image = Image.Load(formFile.OpenReadStream());
+                    //Picture picture = new Picture();
+                    //picture.FileName = Guid.NewGuid().ToString() + Path.GetExtension(formFile.FileName);
+                    //picture.MimeType = formFile.ContentType;
 
-                    image.Save(Directory.GetCurrentDirectory() + "/images/original/" + picture.FileName);
-                    pictures.Add(picture);
+                    //image.Save(Directory.GetCurrentDirectory() + "/images/original/" + picture.FileName);
+                    //pictures.Add(picture);
+                    if (formFile.Length > 0)
+                    {
+                        Image image = Image.Load(formFile.OpenReadStream());
+                        Picture picture = new Picture();
+                        picture.FileName = Guid.NewGuid().ToString() + Path.GetExtension(formFile.FileName);
+                        picture.MimeType = formFile.ContentType;
+
+                        image.Save(Path.Combine(Directory.GetCurrentDirectory(), "images", "original", picture.FileName));
+                        pictures.Add(picture);
+                    }
                 }
             }
 
@@ -110,6 +120,7 @@ namespace PostHubAPI.Controllers
 
         [HttpPost("{parentCommentId}")]
         [Authorize]
+        [DisableRequestSizeLimit]
         public async Task<ActionResult<CommentDisplayDTO>> PostComment(int parentCommentId, CommentDTO commentDTO)
         {
             List<Picture> pictures = new List<Picture>();

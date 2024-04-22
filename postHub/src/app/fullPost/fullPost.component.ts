@@ -16,6 +16,7 @@ export class FullPostComponent implements OnInit {
   sorting : string = "popular";
   newComment : string = "";
   newMainCommentText : string = "";
+  listImageIds : number[] = [];
 
   // Booléens sus pour cacher / afficher des boutons
   isAuthor : boolean = false;
@@ -39,6 +40,8 @@ export class FullPostComponent implements OnInit {
     if(postId != null){
       this.post = await this.postService.getPost(+postId, this.sorting);
       this.newMainCommentText = this.post.mainComment == null ? "" : this.post.mainComment.text;
+      if(this.post.mainComment?.id != null)
+      this.listImageIds = await this.postService.getPicturesIds(this.post.mainComment?.id);
     }
 
     

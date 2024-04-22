@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Composition;
 using System.Formats.Asn1;
 using System.IO.Pipelines;
 using System.Linq;
@@ -300,6 +301,24 @@ namespace PostHubAPI.Controllers
             } while (comment != null && comment.User == null && comment.GetSubCommentTotal() == 0);
 
             return Ok(new { Message = "Commentaire supprimé." });
+        }
+
+        [HttpGet("{CommentId}")]
+        public async Task<ActionResult<List<int>>> GetPicturesIds (int CommentId)
+        {
+            List<int>? ids = await _pictureService.GetPicturesIds(CommentId);
+            if(ids == null) { return new List<int>(); }
+            return ids;
+        }
+
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        public async Task<ActionResult> GetCommentPicture(int id)
+        {
+            Picture? picture = await _pictureService.GetCommentPicture(id);
+            if(picture == null) { return NotFound(); }
+            byte[] bytes = System.IO.File.ReadAllBytes(Directory.GetCurrentDirectory() + "/images/original/" + picture.FileName);
+            return File(bytes, picture.MimeType);
         }
 
         private static IEnumerable<Post> GetPopularPosts(Hub hub, int qty)

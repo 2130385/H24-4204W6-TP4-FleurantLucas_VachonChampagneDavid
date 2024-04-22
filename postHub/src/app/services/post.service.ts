@@ -11,6 +11,13 @@ export class PostService {
 
   constructor(public http : HttpClient) { }
 
+// Obtenir une liste de posts en triant par nouveauté / popularité
+async getPicturesIds(commentId : number) : Promise<number[]>{
+  let x = await lastValueFrom(this.http.get<number[]>("http://localhost:7007/api/Comments/GetPicturesIds/" + commentId));
+  console.log(x);
+  return x;
+}
+
   // Obtenir une liste de posts en triant par nouveauté / popularité
   async getPostList(tab : string, sorting : string) : Promise<Post[]>{
     let x = await lastValueFrom(this.http.get<Post[]>("http://localhost:7007/api/Comments/GetPosts/" + tab + "/" + sorting));

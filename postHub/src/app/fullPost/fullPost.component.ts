@@ -3,6 +3,7 @@ import { faDownLong, faEllipsis, faImage, faMessage, faUpLong, faXmark } from '@
 import { Post } from '../models/post';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PostService } from '../services/post.service';
+import { CommentComponent } from '../comment/comment.component';
 
 @Component({
   selector: 'app-fullPost',
@@ -17,7 +18,6 @@ export class FullPostComponent implements OnInit {
   newComment : string = "";
   newMainCommentText : string = "";
   selectedImages: File[] = [];
-  imagePreviews: string[] = [];
 
   // Booléens sus pour cacher / afficher des boutons
   isAuthor : boolean = false;
@@ -33,6 +33,7 @@ export class FullPostComponent implements OnInit {
   faImage = faImage;
   faXmark = faXmark;
 
+
   constructor(public postService : PostService, public route : ActivatedRoute, public router : Router) { }
 
   async ngOnInit() {
@@ -47,23 +48,33 @@ export class FullPostComponent implements OnInit {
     this.isAuthor = localStorage.getItem("username") == this.post?.mainComment?.username;
   }
 
-  onImageSelected(event: any) {
-    const files: FileList = event.target.files;
-    for (let i = 0; i < files.length; i++) {
-      const file: File | null = files.item(i);
-      if (file) {
-        // Read the file as a data URL
+  onFileChange(event: any) {
+    const files = event.target.files;
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
         const reader = new FileReader();
-        reader.onload = () => {
-          // Add the data URL to the array
-          this.imagePreviews.push(reader.result as string);
+        reader.onload = (e: any) => {
+          this.selectedImages.push(e.target.result);
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(files[i]);
+        console.log(files[i]);
       }
     }
   }
-  
 
+  dataURItoBlob(dataURI: any) {
+    const parts = dataURI.split(';base64,');
+    const contentType = parts[0].split(':')[1];
+    const byteCharacters = atob(parts[1]);
+  
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+  
+    return new Blob([byteArray], { type: contentType });
+  }
   
 
   async toggleSorting(){
@@ -81,11 +92,14 @@ export class FullPostComponent implements OnInit {
     const formData = new FormData();
     formData.append('text', this.newComment);
   
-    for (const image of this.selectedImages) {
-      formData.append('images', image);
-    }
 
-    this.post?.mainComment?.subComments?.push(await this.postService.postComment(formData, this.post.mainComment.id));
+    this.selectedImages.forEach((fileDataURL, index) => {
+      const fileBlob = this.dataURItoBlob(fileDataURL);
+      formData.append('files[]', fileBlob, 'file_' + index);
+    });
+
+
+    this.post?.mainComment?.subComments?.push(await this.postService.postComment(formData , this.post.mainComment.id));
 
     this.newComment = "";
     this.selectedImages = [];

@@ -32,12 +32,42 @@ export class CommentComponent implements OnInit {
   // Variables associées à des inputs
   newComment : string = "";
   editedText ?: string;
+  selectedImages: File[] = [];
+
 
   constructor(public postService : PostService) { }
 
   ngOnInit() {
     this.isAuthor = localStorage.getItem("username") == this.comment?.username;
     this.editedText = this.comment?.text;
+  }
+
+  onFileChange(event: any) {
+    const files = event.target.files;
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          this.selectedImages.push(e.target.result);
+        };
+        reader.readAsDataURL(files[i]);
+        console.log(files[i]);
+      }
+    }
+  }
+
+  dataURItoBlob(dataURI: any) {
+    const parts = dataURI.split(';base64,');
+    const contentType = parts[0].split(':')[1];
+    const byteCharacters = atob(parts[1]);
+  
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+  
+    return new Blob([byteArray], { type: contentType });
   }
 
   // Créer un nouveau sous-commentaire au commentaire affiché dans ce composant
@@ -49,16 +79,24 @@ export class CommentComponent implements OnInit {
       return;
     }
 
-    const formData = new FormData();
-
     if(this.comment == null) return;
     if(this.comment.subComments == null) this.comment.subComments = [];
+
+    const formData = new FormData();
+    formData.append('text', this.newComment);
+  
+
+    this.selectedImages.forEach((fileDataURL, index) => {
+      const fileBlob = this.dataURItoBlob(fileDataURL);
+      formData.append('files[]', fileBlob, 'file_' + index);
+    });
 
     this.comment.subComments.push(await this.postService.postComment(formData, this.comment.id));
     
     this.replyToggle = false;
     this.repliesToggle = true;
     this.newComment = "";
+    this.selectedImages = [];
   }
 
   // Modifier le texte (et éventuellement ajouter des images) d'un commentaire

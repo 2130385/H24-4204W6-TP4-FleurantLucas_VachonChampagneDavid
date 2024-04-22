@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Formats.Asn1;
 using System.Linq;
 using System.Security.Claims;
@@ -282,6 +283,28 @@ namespace PostHubAPI.Controllers
         private static IEnumerable<Post> GetRecentPosts(Hub hub, int qty)
         {
             return hub.Posts!.OrderByDescending(p => p.MainComment?.Date).Take(qty);
+        }
+
+        [HttpGet("{commentId}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<IEnumerable<FileResult>>> GetCommentPictures(int commentId)
+        {
+            List<Picture> pictures = await _pictureService.GetCommentPictures(commentId);
+            if (pictures == null || !pictures.Any()) { return NotFound(); }
+
+            List<FileResult> fileResults = new List<FileResult>();
+
+            foreach (var picture in pictures)
+            {
+                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "images", "original", picture.FileName);
+                if (System.IO.File.Exists(imagePath))
+                {
+                    byte[] bytes = await System.IO.File.ReadAllBytesAsync(imagePath);
+                    fileResults.Add(File(bytes, picture.MimeType, picture.FileName));
+                }
+            }
+
+            return fileResults;
         }
     }
 }

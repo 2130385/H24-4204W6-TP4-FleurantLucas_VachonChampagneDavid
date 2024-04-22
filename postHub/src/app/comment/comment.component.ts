@@ -33,6 +33,8 @@ export class CommentComponent implements OnInit {
   newComment : string = "";
   editedText ?: string;
   selectedImages: File[] = [];
+  commentsWithImages: { commentId: number, images: File[] }[] = [];
+
 
 
   constructor(public postService : PostService) { }
@@ -68,6 +70,30 @@ export class CommentComponent implements OnInit {
     const byteArray = new Uint8Array(byteNumbers);
   
     return new Blob([byteArray], { type: contentType });
+  }
+
+  async getImgUrl(file: File): Promise<string> {
+    if (!file) {
+      return '';
+    }
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    return new Promise<string>((resolve) => {
+      reader.onload = () => {
+        resolve(reader.result as string);
+      };
+    });
+  }
+
+  async getCommentPictures() {
+    // Assume you have an array of comment IDs
+    const commentIds: number[] = [1, 2, 3]; // Example comment IDs
+
+    for (const commentId of commentIds) {
+      const images = await this.postService.getCommentPictures(commentId);
+      this.commentsWithImages.push({ commentId, images });
+    }
   }
 
   // Créer un nouveau sous-commentaire au commentaire affiché dans ce composant

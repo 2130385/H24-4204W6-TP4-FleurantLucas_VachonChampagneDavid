@@ -57,7 +57,6 @@ export class FullPostComponent implements OnInit {
           this.selectedImages.push(e.target.result);
         };
         reader.readAsDataURL(files[i]);
-        console.log(files[i]);
       }
     }
   }

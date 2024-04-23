@@ -17,6 +17,7 @@ using PostHubAPI.Models;
 using PostHubAPI.Models.DTOs;
 using PostHubAPI.Services;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
 
 namespace PostHubAPI.Controllers
 {
@@ -77,14 +78,16 @@ namespace PostHubAPI.Controllers
                     picture.FileName = Guid.NewGuid().ToString() + Path.GetExtension(formFile.FileName);
                     picture.MimeType = formFile.ContentType;
 
-                    //string filePath = Directory.GetCurrentDirectory() + "\\" + formFile.FileName + ".png";
-
-
-                    //image.Save(filePath);
+                    string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "images", "original", picture.FileName);
+                    using (var outputStream = new FileStream(imagePath, FileMode.Create))
+                    {
+                        image.Save(outputStream, new PngEncoder());
+                    }
 
                     pictures.Add(picture);
                 }
             }
+
 
             User? user = await _userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
             if (user == null) return Unauthorized();
@@ -98,6 +101,8 @@ namespace PostHubAPI.Controllers
             bool voteToggleSuccess = await _commentService.UpvoteComment(newComment.Id, user);
             if (!voteToggleSuccess) return StatusCode(StatusCodes.Status500InternalServerError);
 
+
+            await _pictureService.AddPicturesAsync(pictures, newComment);
             return Ok(new CommentDisplayDTO(newComment, false, user));
         }
 
@@ -287,12 +292,12 @@ namespace PostHubAPI.Controllers
 
         [HttpGet("{commentId}")]
         [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<FileResult>>> GetCommentPictures(int commentId)
+        public async Task<ActionResult<IEnumerable<string>>> GetCommentPictures(int commentId)
         {
             List<Picture> pictures = await _pictureService.GetCommentPictures(commentId);
             if (pictures == null || !pictures.Any()) { return NotFound(); }
 
-            List<FileResult> fileResults = new List<FileResult>();
+            List<string> base64Images = new List<string>();
 
             foreach (var picture in pictures)
             {
@@ -300,11 +305,14 @@ namespace PostHubAPI.Controllers
                 if (System.IO.File.Exists(imagePath))
                 {
                     byte[] bytes = await System.IO.File.ReadAllBytesAsync(imagePath);
-                    fileResults.Add(File(bytes, picture.MimeType, picture.FileName));
+                    string base64String = Convert.ToBase64String(bytes);
+                    string dataUrl = $"data:image/png;base64,{base64String}";
+                    base64Images.Add(dataUrl);
                 }
             }
-
-            return fileResults;
+            return base64Images;
         }
+
+
     }
 }

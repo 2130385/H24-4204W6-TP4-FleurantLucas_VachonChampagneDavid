@@ -85,8 +85,8 @@ export class PostService {
     console.log(x);
   }
 
-  async getCommentPictures(commentId : number) : Promise<File[]>{
-    let x = await lastValueFrom(this.http.get<File[]>("http://localhost:7007/api/Comments/GetCommentPictures/" + commentId));
+  async getCommentPictures(commentId : number) : Promise<string[]>{
+    let x = await lastValueFrom(this.http.get<string[]>("http://localhost:7007/api/Comments/GetCommentPictures/" + commentId));
     console.log(x);
     return x;
   }

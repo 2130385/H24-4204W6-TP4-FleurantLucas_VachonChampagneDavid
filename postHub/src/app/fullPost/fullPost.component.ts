@@ -12,6 +12,8 @@ import { CommentComponent } from '../comment/comment.component';
 })
 export class FullPostComponent implements OnInit {
 
+  @ViewChild("myPictureViewChild", {static:false}) picturesInput ?: ElementRef;
+
   // Variables pour l'affichage ou associées à des inputs
   post : Post | null = null;
   sorting : string = "popular";
@@ -50,18 +52,18 @@ export class FullPostComponent implements OnInit {
     this.isAuthor = localStorage.getItem("username") == this.post?.mainComment?.username;
   }
 
-  onFileChange(event: any) {
-    const files = event.target.files;
-    if (files) {
-      for (let i = 0; i < files.length; i++) {
-        const reader = new FileReader();
-        reader.onload = (e: any) => {
-          this.selectedImages.push(e.target.result);
-        };
-        reader.readAsDataURL(files[i]);
-      }
-    }
-  }
+  // onFileChange(event: any) {
+  //   const files = event.target.files;
+  //   if (files) {
+  //     for (let i = 0; i < files.length; i++) {
+  //       const reader = new FileReader();
+  //       reader.onload = (e: any) => {
+  //         this.selectedImages.push(e.target.result);
+  //       };
+  //       reader.readAsDataURL(files[i]);
+  //     }
+  //   }
+  // }
 
   dataURItoBlob(dataURI: any) {
     const parts = dataURI.split(';base64,');
@@ -89,21 +91,40 @@ export class FullPostComponent implements OnInit {
       alert("Écris un commentaire niochon");
       return;
     }
+    /////
+    let formData = new FormData();
+    if(this.picturesInput == undefined){console.log("Input HTML non chargé")}
 
-    const formData = new FormData();
-    formData.append('text', this.newComment);
+    let file = this.picturesInput?.nativeElement.files[0];
+    if(file == null){
+      console.log("Input HTML ne contient aucune image.")
+    }
+    formData.append("text", this.newComment);
+    // formData.append("image", file, file.name);
+    let files = this.picturesInput?.nativeElement.files;
+  if (files === null || files.length === 0) {
+    console.log("Input HTML ne contient aucune image.")
+  } else {
+    for (let i = 0; i < files.length; i++) {
+      formData.append("images", files[i], files[i].name);
+    }
+  }
+
+    ////
+    // const formData = new FormData();
+    // formData.append('text', this.newComment);
   
 
-    this.selectedImages.forEach((fileDataURL, index) => {
-      const fileBlob = this.dataURItoBlob(fileDataURL);
-      formData.append('files[]', fileBlob, 'file_' + index);
-    });
+    // this.selectedImages.forEach((fileDataURL, index) => {
+    //   const fileBlob = this.dataURItoBlob(fileDataURL);
+    //   formData.append('files[]', fileBlob, 'file_' + index);
+    // });
 
 
     this.post?.mainComment?.subComments?.push(await this.postService.postComment(formData , this.post.mainComment.id));
 
     this.newComment = "";
-    this.selectedImages = [];
+    // this.selectedImages = [];
   }
 
   // Upvote le commentaire principal du post

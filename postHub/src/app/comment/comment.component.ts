@@ -33,17 +33,17 @@ export class CommentComponent implements OnInit {
   newComment: string = "";
   editedText?: string;
   selectedImages: File[] = [];
-  commentPictures: string[] = [];
+  commentPicturesIds: number[] = [];
 
 
 
   constructor(public postService: PostService) { }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.isAuthor = localStorage.getItem("username") == this.comment?.username;
     this.editedText = this.comment?.text;
     if (this.comment?.id !== undefined) {
-      this.getCommentPictures(this.comment.id);
+    this.commentPicturesIds = await this.postService.getPicturesIds(this.comment.id);
     }
   }
 
@@ -75,10 +75,10 @@ export class CommentComponent implements OnInit {
     return new Blob([byteArray], { type: contentType });
   }
 
-  async getCommentPictures(commentId: number) {
-    this.commentPictures = await this.postService.getCommentPictures(commentId);
-    console.log(this.commentPictures);
-  }
+  // async getCommentPictures(commentId: number) {
+  //   this.commentPictures = await this.postService.getCommentPictures(commentId);
+  //   console.log(this.commentPictures);
+  // }
 
   // Créer un nouveau sous-commentaire au commentaire affiché dans ce composant
   // (Pouvoir les commentaires du post, donc ceux qui sont enfant du commentaire principal du post,

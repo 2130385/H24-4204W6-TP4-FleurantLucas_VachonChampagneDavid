@@ -82,7 +82,7 @@ namespace PostHubAPI.Controllers
             Hub? hub = await _hubService.GetHub(hubId);
             if (hub == null) return NotFound();
 
-            Comment? mainComment = await _commentService.CreateComment(user, text, null, pictures);
+            Comment? mainComment = await _commentService.CreateComment(user, text, pictures, null);
             if (mainComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
             
             //Ajout des images//
@@ -160,7 +160,7 @@ namespace PostHubAPI.Controllers
             if (!voteToggleSuccess) return StatusCode(StatusCodes.Status500InternalServerError);
 
 
-            await _pictureService.AddPicturesAsync(pictures, newComment);
+            //await _pictureService.AddPicturesAsync(pictures, newComment);
             return Ok(new CommentDisplayDTO(newComment, false, user));
         }
 
@@ -366,28 +366,28 @@ namespace PostHubAPI.Controllers
             return hub.Posts!.OrderByDescending(p => p.MainComment?.Date).Take(qty);
         }
 
-        [HttpGet("{commentId}")]
-        [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<string>>> GetCommentPictures(int commentId)
-        {
-            List<Picture> pictures = await _pictureService.GetCommentPictures(commentId);
-            if (pictures == null || !pictures.Any()) { return NotFound(); }
+        //[HttpGet("{commentId}")]
+        //[AllowAnonymous]
+        //public async Task<ActionResult<IEnumerable<string>>> GetCommentPictures(int commentId)
+        //{
+        //    List<Picture> pictures = await _pictureService.GetCommentPictures(commentId);
+        //    if (pictures == null || !pictures.Any()) { return NotFound(); }
 
-            List<string> base64Images = new List<string>();
+        //    List<string> base64Images = new List<string>();
 
-            foreach (var picture in pictures)
-            {
-                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "images", "original", picture.FileName);
-                if (System.IO.File.Exists(imagePath))
-                {
-                    byte[] bytes = await System.IO.File.ReadAllBytesAsync(imagePath);
-                    string base64String = Convert.ToBase64String(bytes);
-                    string dataUrl = $"data:image/png;base64,{base64String}";
-                    base64Images.Add(dataUrl);
-                }
-            }
-            return base64Images;
-        }
+        //    foreach (var picture in pictures)
+        //    {
+        //        string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "images", "original", picture.FileName);
+        //        if (System.IO.File.Exists(imagePath))
+        //        {
+        //            byte[] bytes = await System.IO.File.ReadAllBytesAsync(imagePath);
+        //            string base64String = Convert.ToBase64String(bytes);
+        //            string dataUrl = $"data:image/png;base64,{base64String}";
+        //            base64Images.Add(dataUrl);
+        //        }
+        //    }
+        //    return base64Images;
+        //}
 
 
     }

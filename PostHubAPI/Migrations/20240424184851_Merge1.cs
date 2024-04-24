@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace PostHubAPI.Migrations
 {
-    public partial class init : Migration
+    public partial class Merge1 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

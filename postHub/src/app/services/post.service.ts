@@ -92,10 +92,10 @@ async getPicturesIds(commentId : number) : Promise<number[]>{
     console.log(x);
   }
 
-  async getCommentPictures(commentId : number) : Promise<string[]>{
-    let x = await lastValueFrom(this.http.get<string[]>("http://localhost:7007/api/Comments/GetCommentPictures/" + commentId));
-    console.log(x);
-    return x;
-  }
+  // async getCommentPictures(commentId : number) : Promise<string[]>{
+  //   let x = await lastValueFrom(this.http.get<string[]>("http://localhost:7007/api/Comments/GetCommentPictures/" + commentId));
+  //   console.log(x);
+  //   return x;
+  // }
 
 }

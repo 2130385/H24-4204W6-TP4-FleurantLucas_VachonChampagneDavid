@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Formats.Asn1;
 using System.Linq;
 using System.Security.Claims;
@@ -16,6 +17,7 @@ using PostHubAPI.Models;
 using PostHubAPI.Models.DTOs;
 using PostHubAPI.Services;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
 
 namespace PostHubAPI.Controllers
 {
@@ -48,34 +50,59 @@ namespace PostHubAPI.Controllers
             Hub? hub = await _hubService.GetHub(hubId);
             if (hub == null) return NotFound();
 
-            Comment? mainComment = await _commentService.CreateComment(user, postDTO.Text, null);
-            if(mainComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
+            Comment? mainComment = await _commentService.CreateComment(user, postDTO.Text, null, null);
+            if (mainComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
 
             Post? post = await _postService.CreatePost(postDTO.Title, hub, mainComment);
-            if(post == null) return StatusCode(StatusCodes.Status500InternalServerError);
+            if (post == null) return StatusCode(StatusCodes.Status500InternalServerError);
 
             bool voteToggleSuccess = await _commentService.UpvoteComment(mainComment.Id, user);
-            if(!voteToggleSuccess) return StatusCode(StatusCodes.Status500InternalServerError);
+            if (!voteToggleSuccess) return StatusCode(StatusCodes.Status500InternalServerError);
 
             return Ok(new PostDisplayDTO(post, true, user));
         }
 
         [HttpPost("{parentCommentId}")]
         [Authorize]
-        public async Task<ActionResult<CommentDisplayDTO>> PostComment(int parentCommentId, CommentDTO commentDTO)
+        public async Task<ActionResult<CommentDisplayDTO>> PostComment(int parentCommentId)
         {
+            var files = Request.Form.Files;
+            var text = Request.Form["text"];
+            List<Picture> pictures = new List<Picture>();
+            if (files != null)
+            {
+                foreach (var formFile in files)
+                {
+                    Image image = Image.Load(formFile.OpenReadStream());
+                    Picture picture = new Picture();
+                    picture.FileName = Guid.NewGuid().ToString() + Path.GetExtension(formFile.FileName);
+                    picture.MimeType = formFile.ContentType;
+
+                    string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "images", "original", picture.FileName);
+                    using (var outputStream = new FileStream(imagePath, FileMode.Create))
+                    {
+                        image.Save(outputStream, new PngEncoder());
+                    }
+
+                    pictures.Add(picture);
+                }
+            }
+
+
             User? user = await _userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
             if (user == null) return Unauthorized();
 
             Comment? parentComment = await _commentService.GetComment(parentCommentId);
             if (parentComment == null || parentComment.User == null) return BadRequest();
 
-            Comment? newComment = await _commentService.CreateComment(user, commentDTO.Text, parentComment);
-            if(newComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
+            Comment? newComment = await _commentService.CreateComment(user, text, pictures, parentComment);
+            if (newComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
 
             bool voteToggleSuccess = await _commentService.UpvoteComment(newComment.Id, user);
             if (!voteToggleSuccess) return StatusCode(StatusCodes.Status500InternalServerError);
 
+
+            await _pictureService.AddPicturesAsync(pictures, newComment);
             return Ok(new CommentDisplayDTO(newComment, false, user));
         }
 
@@ -89,12 +116,12 @@ namespace PostHubAPI.Controllers
 
             if (tabName == "myHubs" && user != null && user.Hubs != null)
             {
-                hubs = user.Hubs; 
+                hubs = user.Hubs;
             }
             else
             {
                 hubs = await _hubService.GetAllHubs();
-                if(hubs == null) return StatusCode(StatusCodes.Status500InternalServerError);
+                if (hubs == null) return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
             int postPerHub = (int)Math.Ceiling(10.0 / hubs.Count());
@@ -157,10 +184,10 @@ namespace PostHubAPI.Controllers
             User? user = await _userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
             Post? post = await _postService.GetPost(postId);
-            if(post == null) return NotFound();
+            if (post == null) return NotFound();
 
             PostDisplayDTO postDisplayDTO = new PostDisplayDTO(post, true, user);
-            if (sorting == "popular") 
+            if (sorting == "popular")
                 postDisplayDTO.MainComment.SubComments = postDisplayDTO.MainComment!.SubComments!.OrderByDescending(c => c.Upvotes - c.Downvotes).ToList();
             else
                 postDisplayDTO.MainComment.SubComments = postDisplayDTO.MainComment!.SubComments!.OrderByDescending(c => c.Date).ToList();
@@ -180,7 +207,7 @@ namespace PostHubAPI.Controllers
             if (user == null || comment.User != user) return Unauthorized();
 
             Comment? editedComment = await _commentService.EditComment(comment, commentDTO.Text);
-            if(editedComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
+            if (editedComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
 
             return Ok(new CommentDisplayDTO(editedComment, true, user));
         }
@@ -190,7 +217,7 @@ namespace PostHubAPI.Controllers
         public async Task<ActionResult> UpvoteComment(int commentId)
         {
             User? user = await _userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            if(user == null) return BadRequest();
+            if (user == null) return BadRequest();
 
             bool voteToggleSuccess = await _commentService.UpvoteComment(commentId, user);
             if (!voteToggleSuccess) return StatusCode(StatusCodes.Status500InternalServerError);
@@ -234,7 +261,7 @@ namespace PostHubAPI.Controllers
                     if (deletedPost == null) return StatusCode(StatusCodes.Status500InternalServerError);
                 }
 
-                if(comment.GetSubCommentTotal() == 0)
+                if (comment.GetSubCommentTotal() == 0)
                 {
                     Comment? deletedComment = await _commentService.HardDeleteComment(comment);
                     if (deletedComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
@@ -262,5 +289,30 @@ namespace PostHubAPI.Controllers
         {
             return hub.Posts!.OrderByDescending(p => p.MainComment?.Date).Take(qty);
         }
+
+        [HttpGet("{commentId}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<IEnumerable<string>>> GetCommentPictures(int commentId)
+        {
+            List<Picture> pictures = await _pictureService.GetCommentPictures(commentId);
+            if (pictures == null || !pictures.Any()) { return NotFound(); }
+
+            List<string> base64Images = new List<string>();
+
+            foreach (var picture in pictures)
+            {
+                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "images", "original", picture.FileName);
+                if (System.IO.File.Exists(imagePath))
+                {
+                    byte[] bytes = await System.IO.File.ReadAllBytesAsync(imagePath);
+                    string base64String = Convert.ToBase64String(bytes);
+                    string dataUrl = $"data:image/png;base64,{base64String}";
+                    base64Images.Add(dataUrl);
+                }
+            }
+            return base64Images;
+        }
+
+
     }
 }

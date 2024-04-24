@@ -21,7 +21,7 @@ namespace PostHubAPI.Services
             return await _context.Comments.FindAsync(id);
         }
 
-        public async Task<Comment?> CreateComment(User user, string text, Comment? parentComment)
+        public async Task<Comment?> CreateComment(User user, string text, List<Picture> pictures, Comment? parentComment)
         {
             if (IsContextNull()) return null;
 
@@ -54,11 +54,11 @@ namespace PostHubAPI.Services
             deletedComment.User = null;
             deletedComment.Upvoters ??= new List<User>();
             deletedComment.Downvoters ??= new List<User>();
-            foreach(User u in deletedComment.Upvoters)
+            foreach (User u in deletedComment.Upvoters)
             {
                 u.Upvotes?.Remove(deletedComment);
             }
-            foreach(User u in deletedComment.Downvoters)
+            foreach (User u in deletedComment.Downvoters)
             {
                 u.Downvotes?.Remove(deletedComment);
             }
@@ -72,7 +72,7 @@ namespace PostHubAPI.Services
         {
             deletedComment.SubComments ??= new List<Comment>();
 
-            for(int i = deletedComment.SubComments.Count - 1; i >= 0; i--)
+            for (int i = deletedComment.SubComments.Count - 1; i >= 0; i--)
             {
                 Comment? deletedSubComment = await HardDeleteComment(deletedComment.SubComments[i]);
                 if (deletedSubComment == null) return null;

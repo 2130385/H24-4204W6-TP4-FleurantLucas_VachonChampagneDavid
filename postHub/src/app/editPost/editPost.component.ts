@@ -61,10 +61,10 @@ export class EditPostComponent implements OnInit {
     }
   }
 
-    let postDTO = {
-      title : this.postTitle,
-      text : this.postText
-    }; 
+    // let postDTO = {
+    //   title : this.postTitle,
+    //   text : this.postText
+    // }; 
 
     // let newPost : Post = await this.postService.postPost(this.hub.id, postDTO);
     

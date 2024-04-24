@@ -12,8 +12,8 @@ using PostHubAPI.Data;
 namespace PostHubAPI.Migrations
 {
     [DbContext(typeof(PostHubAPIContext))]
-    [Migration("20240419174214_AjoutPictures")]
-    partial class AjoutPictures
+    [Migration("20240424181736_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -257,7 +257,7 @@ namespace PostHubAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int?>("CommentId")
+                    b.Property<int>("CommentId")
                         .HasColumnType("int");
 
                     b.Property<string>("FileName")
@@ -487,9 +487,13 @@ namespace PostHubAPI.Migrations
 
             modelBuilder.Entity("PostHubAPI.Models.Picture", b =>
                 {
-                    b.HasOne("PostHubAPI.Models.Comment", null)
+                    b.HasOne("PostHubAPI.Models.Comment", "Comment")
                         .WithMany("Pictures")
-                        .HasForeignKey("CommentId");
+                        .HasForeignKey("CommentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Comment");
                 });
 
             modelBuilder.Entity("PostHubAPI.Models.Post", b =>

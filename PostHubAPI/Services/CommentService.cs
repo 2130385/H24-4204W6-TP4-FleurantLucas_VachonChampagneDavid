@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using PostHubAPI.Data;
 using PostHubAPI.Models;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
@@ -32,6 +32,7 @@ namespace PostHubAPI.Services
                 Date = DateTime.UtcNow,
                 User = user, // Auteur
                 ParentComment = parentComment, // null si commentaire principal du post
+                Pictures = pictures
             };
 
             _context.Comments.Add(newComment);

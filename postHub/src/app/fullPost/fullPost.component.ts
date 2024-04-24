@@ -3,6 +3,7 @@ import { faDownLong, faEllipsis, faImage, faMessage, faUpLong, faXmark } from '@
 import { Post } from '../models/post';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PostService } from '../services/post.service';
+import { CommentComponent } from '../comment/comment.component';
 
 @Component({
   selector: 'app-fullPost',
@@ -11,11 +12,14 @@ import { PostService } from '../services/post.service';
 })
 export class FullPostComponent implements OnInit {
 
+  @ViewChild("myPictureViewChild", {static:false}) picturesInput ?: ElementRef;
+
   // Variables pour l'affichage ou associées à des inputs
   post : Post | null = null;
   sorting : string = "popular";
   newComment : string = "";
   newMainCommentText : string = "";
+  listImageIds : number[] = [];
 
   // Booléens sus pour cacher / afficher des boutons
   isAuthor : boolean = false;
@@ -31,6 +35,7 @@ export class FullPostComponent implements OnInit {
   faImage = faImage;
   faXmark = faXmark;
 
+
   constructor(public postService : PostService, public route : ActivatedRoute, public router : Router) { }
 
   async ngOnInit() {
@@ -39,11 +44,41 @@ export class FullPostComponent implements OnInit {
     if(postId != null){
       this.post = await this.postService.getPost(+postId, this.sorting);
       this.newMainCommentText = this.post.mainComment == null ? "" : this.post.mainComment.text;
+      if(this.post.mainComment?.id != null)
+      this.listImageIds = await this.postService.getPicturesIds(this.post.mainComment?.id);
     }
 
     
     this.isAuthor = localStorage.getItem("username") == this.post?.mainComment?.username;
   }
+
+  // onFileChange(event: any) {
+  //   const files = event.target.files;
+  //   if (files) {
+  //     for (let i = 0; i < files.length; i++) {
+  //       const reader = new FileReader();
+  //       reader.onload = (e: any) => {
+  //         this.selectedImages.push(e.target.result);
+  //       };
+  //       reader.readAsDataURL(files[i]);
+  //     }
+  //   }
+  // }
+
+  dataURItoBlob(dataURI: any) {
+    const parts = dataURI.split(';base64,');
+    const contentType = parts[0].split(':')[1];
+    const byteCharacters = atob(parts[1]);
+  
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+  
+    return new Blob([byteArray], { type: contentType });
+  }
+  
 
   async toggleSorting(){
     if(this.post == null) return;
@@ -56,14 +91,40 @@ export class FullPostComponent implements OnInit {
       alert("Écris un commentaire niochon");
       return;
     }
+    /////
+    let formData = new FormData();
+    if(this.picturesInput == undefined){console.log("Input HTML non chargé")}
 
-    let commentDTO = {
-      text : this.newComment
+    let file = this.picturesInput?.nativeElement.files[0];
+    if(file == null){
+      console.log("Input HTML ne contient aucune image.")
     }
+    formData.append("text", this.newComment);
+    // formData.append("image", file, file.name);
+    let files = this.picturesInput?.nativeElement.files;
+  if (files === null || files.length === 0) {
+    console.log("Input HTML ne contient aucune image.")
+  } else {
+    for (let i = 0; i < files.length; i++) {
+      formData.append("images", files[i], files[i].name);
+    }
+  }
 
-    this.post?.mainComment?.subComments?.push(await this.postService.postComment(commentDTO, this.post.mainComment.id));
+    ////
+    // const formData = new FormData();
+    // formData.append('text', this.newComment);
+  
+
+    // this.selectedImages.forEach((fileDataURL, index) => {
+    //   const fileBlob = this.dataURItoBlob(fileDataURL);
+    //   formData.append('files[]', fileBlob, 'file_' + index);
+    // });
+
+
+    this.post?.mainComment?.subComments?.push(await this.postService.postComment(formData , this.post.mainComment.id));
 
     this.newComment = "";
+    // this.selectedImages = [];
   }
 
   // Upvote le commentaire principal du post

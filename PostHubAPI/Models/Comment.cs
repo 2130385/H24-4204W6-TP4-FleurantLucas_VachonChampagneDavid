@@ -15,7 +15,7 @@ namespace PostHubAPI.Models
         public virtual Comment? ParentComment { get; set; } // Si ceci est un sous-commentaire
 
         [InverseProperty("MainComment")]
-        public virtual Post? MainCommentOf {  get; set; } // Si ce commentaire est le commentaire principal du post
+        public virtual Post? MainCommentOf { get; set; } // Si ce commentaire est le commentaire principal du post
 
         [InverseProperty("Comments")]
         public virtual User? User { get; set; }
@@ -26,11 +26,13 @@ namespace PostHubAPI.Models
         [InverseProperty("Downvotes")]
         public virtual List<User>? Downvoters { get; set; } = new List<User>();
 
+        public virtual List<Picture>? Pictures { get; set; } = new List<Picture>();
+
         public int GetSubCommentTotal()
         {
             SubComments ??= new List<Comment>();
-            int total = SubComments.Where(c => c.User != null).Count();
-            foreach(Comment c in SubComments)
+            int total = SubComments.Where(c => c.User != null).Count();
+            foreach (Comment c in SubComments)
             {
                 total += c.GetSubCommentTotal();
             }

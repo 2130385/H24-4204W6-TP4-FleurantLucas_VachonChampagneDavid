@@ -11,6 +11,13 @@ export class PostService {
 
   constructor(public http : HttpClient) { }
 
+// Obtenir une liste de posts en triant par nouveauté / popularité
+async getPicturesIds(commentId : number) : Promise<number[]>{
+  let x = await lastValueFrom(this.http.get<number[]>("http://localhost:7007/api/Comments/GetPicturesIds/" + commentId));
+  console.log(x);
+  return x;
+}
+
   // Obtenir une liste de posts en triant par nouveauté / popularité
   async getPostList(tab : string, sorting : string) : Promise<Post[]>{
     let x = await lastValueFrom(this.http.get<Post[]>("http://localhost:7007/api/Comments/GetPosts/" + tab + "/" + sorting));
@@ -57,9 +64,9 @@ export class PostService {
   }
 
   // Créer un sous-commentaire (donc tous les commentaires qui ne sont pas le commentaire principal d'un post)
-  async postComment(dto : any, parentCommentId : number) : Promise<Comment>{
+  async postComment(formData: FormData, parentCommentId : number) : Promise<Comment>{
 
-    let x = await lastValueFrom(this.http.post<any>("http://localhost:7007/api/Comments/PostComment/" + parentCommentId, dto));
+    let x = await lastValueFrom(this.http.post<any>("http://localhost:7007/api/Comments/PostComment/" + parentCommentId, formData));
     console.log(x);
     return x;
 
@@ -84,5 +91,11 @@ export class PostService {
     let x = await lastValueFrom(this.http.put<any>("http://localhost:7007/api/Comments/DownvoteComment/" + commentId, null));
     console.log(x);
   }
+
+  // async getCommentPictures(commentId : number) : Promise<string[]>{
+  //   let x = await lastValueFrom(this.http.get<string[]>("http://localhost:7007/api/Comments/GetCommentPictures/" + commentId));
+  //   console.log(x);
+  //   return x;
+  // }
 
 }

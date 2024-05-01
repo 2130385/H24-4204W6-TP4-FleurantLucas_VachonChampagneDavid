@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
 export class CommentComponent implements OnInit {
 
   @Input() comment: Comment | null = null;
+  @ViewChild("editCommentPictures", { static: false }) editCommentPictures?: ElementRef;
 
   // Icônes Font Awesome
   faEllipsis = faEllipsis;
@@ -43,7 +44,7 @@ export class CommentComponent implements OnInit {
     this.isAuthor = localStorage.getItem("username") == this.comment?.username;
     this.editedText = this.comment?.text;
     if (this.comment?.id !== undefined) {
-    this.commentPicturesIds = await this.postService.getPicturesIds(this.comment.id);
+      this.commentPicturesIds = await this.postService.getPicturesIds(this.comment.id);
     }
   }
 
@@ -112,13 +113,31 @@ export class CommentComponent implements OnInit {
   // Modifier le texte (et éventuellement ajouter des images) d'un commentaire
   async editComment() {
 
-    if (this.comment == null || this.editedText == undefined) return;
+    if (this.comment == null || this.editedText == undefined || this.editCommentPictures == undefined) return;
 
-    let commentDTO = {
-      text: this.editedText
+    let formData = new FormData();
+    if (this.editCommentPictures == undefined) { console.log("Input HTML non chargé") }
+
+    let file = this.editCommentPictures.nativeElement.files[0];
+    if (file == null) {
+      console.log("Input HTML ne contient aucune image.")
+    }
+    formData.append("text", this.editedText);
+    // formData.append("image", file, file.name);
+    let files = this.editCommentPictures.nativeElement.files;
+    if (files === null || files.length === 0) {
+      console.log("Input HTML ne contient aucune image.")
+    } else {
+      for (let i = 0; i < files.length; i++) {
+        formData.append("images", files[i], files[i].name);
+      }
     }
 
-    let newMainComment = await this.postService.editComment(commentDTO, this.comment.id);
+    // let commentDTO = {
+    //   text: this.editedText
+    // }
+
+    let newMainComment = await this.postService.editComment(formData, this.comment.id);
     this.comment = newMainComment;
     this.editedText = this.comment.text;
     this.editMenu = false;

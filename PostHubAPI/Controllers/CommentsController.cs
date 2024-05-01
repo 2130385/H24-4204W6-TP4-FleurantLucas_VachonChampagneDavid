@@ -255,16 +255,39 @@ namespace PostHubAPI.Controllers
 
         [HttpPut("{commentId}")]
         [Authorize]
-        public async Task<ActionResult<CommentDisplayDTO>> PutComment(int commentId, CommentDTO commentDTO)
+        public async Task<ActionResult<CommentDisplayDTO>> PutComment(int commentId)
         {
             User? user = await _userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var files = Request.Form.Files;
+            var text = Request.Form["text"];
+            List<Picture> pictures = new List<Picture>();
+            if (files != null)
+            {
+                foreach (var formFile in files)
+                {
+                    Image image = Image.Load(formFile.OpenReadStream());
+                    Picture picture = new Picture();
+                    picture.FileName = Guid.NewGuid().ToString() + Path.GetExtension(formFile.FileName);
+                    picture.MimeType = formFile.ContentType;
+
+                    string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "images", "original", picture.FileName);
+                    using (var outputStream = new FileStream(imagePath, FileMode.Create))
+                    {
+                        image.Save(outputStream, new PngEncoder());
+                    }
+
+                    pictures.Add(picture);
+                }
+            }
 
             Comment? comment = await _commentService.GetComment(commentId);
             if (comment == null) return NotFound();
 
             if (user == null || comment.User != user) return Unauthorized();
 
-            Comment? editedComment = await _commentService.EditComment(comment, commentDTO.Text);
+            Comment? editedComment = await _commentService.EditComment(comment, text, pictures);
+
             if (editedComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
 
             return Ok(new CommentDisplayDTO(editedComment, true, user));

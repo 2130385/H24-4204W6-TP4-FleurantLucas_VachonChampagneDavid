@@ -32,7 +32,7 @@ export class CarrouselComponent implements OnInit {
       var glide = new Glide('.glide', {
         type: 'carousel',
         focusAt: 'center',
-        perView: Math.ceil(3),
+        perView: Math.ceil(4),
         rewind: false
       });
       glide.mount();

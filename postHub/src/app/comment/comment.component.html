@@ -52,7 +52,7 @@
     </div>
     <div>
       <!-- Il faudra modifier cet input -->
-      <input *ngIf="editToggle" type="file" accept="images/*" name="editedCommentPictures">
+      <input *ngIf="editToggle" #editCommentPictures type="file" accept="images/*" name="editedCommentPictures" multiple>
     </div>
     <div>
       <button *ngIf="editToggle" (click)="editToggle = false">Annuler</button>

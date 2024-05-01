@@ -61,6 +61,20 @@ namespace PostHubAPI.Services
             //byte[] bytes = System.IO.File.ReadAllBytes(Directory.GetCurrentDirectory() + "/images/original/" + picture.FileName);
             //return File(bytes, picture.MimeType);
         }
+
+        public async Task<Picture?> DeletePicture(int pictureId)
+        {
+            if (IsContextNull()) { return null; }
+            Picture? picture = await _context.Pictures.FindAsync(pictureId);
+            if (picture == null) { return null; }
+            _context.Pictures.Remove(picture);
+            if(File.Exists(Directory.GetCurrentDirectory() + "/images/original/" + picture.FileName + picture.MimeType))
+            {
+                File.Delete(Directory.GetCurrentDirectory() + "/images/original/" + picture.FileName + picture.MimeType);
+            }
+            await _context.SaveChangesAsync();
+            return picture;
+        }
     }
     //if (IsContextNull())
     //{

@@ -339,17 +339,39 @@ namespace PostHubAPI.Controllers
                 if (comment.MainCommentOf != null && comment.GetSubCommentTotal() == 0)
                 {
                     Post? deletedPost = await _postService.DeletePost(comment.MainCommentOf);
+                    List<int>? ids = await _pictureService.GetPicturesIds(comment.Id);
+                    if(ids != null && ids.Count > 0)
+                    foreach (int id in ids)
+                    {
+                        Picture? picture = await _pictureService.DeletePicture(id);
+                        if (picture == null) return StatusCode(StatusCodes.Status500InternalServerError);
+                    }
                     if (deletedPost == null) return StatusCode(StatusCodes.Status500InternalServerError);
                 }
 
                 if (comment.GetSubCommentTotal() == 0)
                 {
                     Comment? deletedComment = await _commentService.HardDeleteComment(comment);
+                    List<int>? ids = await _pictureService.GetPicturesIds(comment.Id);
+                    if (ids != null && ids.Count > 0)
+                        foreach (int id in ids)
+                    {
+                        Picture? picture = await _pictureService.DeletePicture(id);
+                        if (picture == null) return StatusCode(StatusCodes.Status500InternalServerError);
+                    }
                     if (deletedComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
                 }
                 else
                 {
                     Comment? deletedComment = await _commentService.SoftDeleteComment(comment);
+                    List<int>? ids = await _pictureService.GetPicturesIds(comment.Id);
+                    if (ids != null && ids.Count > 0)
+                        foreach (int id in ids)
+                    {
+                        Picture? picture = await _pictureService.DeletePicture(id);
+                        if (picture == null) return StatusCode(StatusCodes.Status500InternalServerError);
+                    }
+                    
                     if (deletedComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
                     break;
                 }

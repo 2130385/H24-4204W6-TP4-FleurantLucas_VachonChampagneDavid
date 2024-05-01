@@ -13,6 +13,7 @@ import { CommentComponent } from '../comment/comment.component';
 export class FullPostComponent implements OnInit {
 
   @ViewChild("myPictureViewChild", {static:false}) picturesInput ?: ElementRef;
+  @ViewChild("mainCommentEditPictures", {static:false}) mainCommentEditPictures ?: ElementRef;
 
   // Variables pour l'affichage ou associées à des inputs
   post : Post | null = null;
@@ -163,15 +164,36 @@ export class FullPostComponent implements OnInit {
 
   // Modifier le commentaire principal du post
   async editMainComment(){
+
+    let formData = new FormData();
+    if(this.mainCommentEditPictures == undefined){console.log("Input HTML non chargé")}
+
+    let file = this.mainCommentEditPictures?.nativeElement.files[0];
+    if(file == null){
+      console.log("Input HTML ne contient aucune image.")
+    }
+    formData.append("text", this.newMainCommentText);
+    // formData.append("image", file, file.name);
+    let files = this.mainCommentEditPictures?.nativeElement.files;
+  if (files === null || files.length === 0) {
+    console.log("Input HTML ne contient aucune image.")
+  } else {
+    for (let i = 0; i < files.length; i++) {
+      formData.append("images", files[i], files[i].name);
+    }
+  }
+
+
+
     if(this.post == null || this.post.mainComment == null) return;
 
-    let commentDTO = {
-      text : this.newMainCommentText
-    }
+    // let commentDTO = {
+    //   text : this.newMainCommentText
+    // }
 
-    let newMainComment = await this.postService.editComment(commentDTO, this.post?.mainComment.id);
+    let newMainComment = await this.postService.editComment(formData, this.post?.mainComment.id);
     this.post.mainComment = newMainComment;
-    this.toggleMainCommentEdit = false;
+    this.toggleMainCommentEdit = false; 
   }
 
   // Supprimer le commentaire principal du post. Notez que ça ne va pas supprimer le post en entier s'il y a le moindre autre commentaire.

@@ -41,9 +41,16 @@ namespace PostHubAPI.Services
             return newComment;
         }
 
-        public async Task<Comment?> EditComment(Comment comment, string text)
+        public async Task<Comment?> EditComment(Comment comment, string text, List<Picture> newPictures)
         {
             comment.Text = text;
+            if(newPictures.Count > 0)
+            {
+                foreach (Picture picture in newPictures)
+                {
+                    comment.Pictures.Add(picture);
+                }
+            }
             await _context.SaveChangesAsync();
 
             return comment;

@@ -32,10 +32,10 @@
       [(ngModel)]="newMainCommentText"></textarea>
     <div class="commentPictures">
       <!-- Des images pourraient être affichées ici -->
-      <div *ngIf="listImageIds.length >= 4">
+      <div *ngIf="listImageIds.length > 4">
         <app-carrousel [imagesIds]="listImageIds"></app-carrousel>
       </div>
-      <div *ngIf="listImageIds.length < 4">
+      <div *ngIf="listImageIds.length <= 4">
         <img *ngFor="let i of listImageIds" [src]="'http://localhost:7007/api/Comments/GetCommentPicture/' + i">
       </div>
       

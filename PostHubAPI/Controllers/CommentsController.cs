@@ -54,13 +54,6 @@ namespace PostHubAPI.Controllers
             {
                 foreach (var formFile in files)
                 {
-                    //Image image = Image.Load(formFile.OpenReadStream());
-                    //Picture picture = new Picture();
-                    //picture.FileName = Guid.NewGuid().ToString() + Path.GetExtension(formFile.FileName);
-                    //picture.MimeType = formFile.ContentType;
-
-                    //image.Save(Directory.GetCurrentDirectory() + "/images/original/" + picture.FileName);
-                    //pictures.Add(picture);
                     if (formFile.Length > 0)
                     {
                         Image image = Image.Load(formFile.OpenReadStream());
@@ -98,27 +91,6 @@ namespace PostHubAPI.Controllers
             return Ok(new PostDisplayDTO(post, true, user));
         }
 
-        //[HttpPost("{hubId}")]
-        //[Authorize]
-        //public async Task<ActionResult<PostDisplayDTO>> PostPost(int hubId, PostDTO postDTO)
-        //{
-        //    User? user = await _userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
-        //    if (user == null) return Unauthorized();
-
-        //    Hub? hub = await _hubService.GetHub(hubId);
-        //    if (hub == null) return NotFound();
-
-        //    Comment? mainComment = await _commentService.CreateComment(user, postDTO.Text, null);
-        //    if(mainComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
-
-        //    Post? post = await _postService.CreatePost(postDTO.Title, hub, mainComment);
-        //    if(post == null) return StatusCode(StatusCodes.Status500InternalServerError);
-
-        //    bool voteToggleSuccess = await _commentService.UpvoteComment(mainComment.Id, user);
-        //    if(!voteToggleSuccess) return StatusCode(StatusCodes.Status500InternalServerError);
-
-        //    return Ok(new PostDisplayDTO(post, true, user));
-        //}
 
         [HttpPost("{parentCommentId}")]
         [Authorize]
@@ -401,6 +373,19 @@ namespace PostHubAPI.Controllers
             return File(bytes, picture.MimeType);
         }
 
+        [HttpDelete("{id}")]
+        [AllowAnonymous]
+        public async Task<ActionResult> DeletePicture(int id)
+        {
+            //Picture picture = await _pictureService.GetCommentPicture(id);
+            //Comment comment = await _commentService.GetComment(picture.Comment.Id);
+            //List<Picture> pictures = comment.Pictures;
+            //pictures.Remove(picture);
+            //_commentService.EditComment(comment);
+            await _pictureService.DeletePicture(id);
+            return Ok();
+        }
+
         private static IEnumerable<Post> GetPopularPosts(Hub hub, int qty)
         {
             return hub.Posts!.OrderByDescending(p => p.MainComment?.Upvoters?.Count - p.MainComment?.Downvoters?.Count).Take(qty);
@@ -410,29 +395,6 @@ namespace PostHubAPI.Controllers
         {
             return hub.Posts!.OrderByDescending(p => p.MainComment?.Date).Take(qty);
         }
-
-        //[HttpGet("{commentId}")]
-        //[AllowAnonymous]
-        //public async Task<ActionResult<IEnumerable<string>>> GetCommentPictures(int commentId)
-        //{
-        //    List<Picture> pictures = await _pictureService.GetCommentPictures(commentId);
-        //    if (pictures == null || !pictures.Any()) { return NotFound(); }
-
-        //    List<string> base64Images = new List<string>();
-
-        //    foreach (var picture in pictures)
-        //    {
-        //        string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "images", "original", picture.FileName);
-        //        if (System.IO.File.Exists(imagePath))
-        //        {
-        //            byte[] bytes = await System.IO.File.ReadAllBytesAsync(imagePath);
-        //            string base64String = Convert.ToBase64String(bytes);
-        //            string dataUrl = $"data:image/png;base64,{base64String}";
-        //            base64Images.Add(dataUrl);
-        //        }
-        //    }
-        //    return base64Images;
-        //}
 
 
     }

@@ -202,5 +202,13 @@ export class FullPostComponent implements OnInit {
     await this.postService.deleteComment(this.post.mainComment.id);
     this.router.navigate(["/"]);
   }
-  
+
+  async deletePicture(pictureId: number) {
+    const index = this.listImageIds.indexOf(pictureId);
+    if (index !== -1) {
+      this.postService.deletePicture(pictureId);
+      this.listImageIds.splice(index, 1);
+    }
+  }
+
 }

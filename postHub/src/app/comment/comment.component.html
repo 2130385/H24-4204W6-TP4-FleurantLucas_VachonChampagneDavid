@@ -17,16 +17,17 @@
         [(ngModel)]="editedText">{{comment.text}}</textarea>
     </div>
   </div>
-  <div>
     <!-- Des images pourraient être affichées ici... -->
-    <div style="display: flex; align-items: center;">
-      <span *ngFor="let i of commentPicturesIds" style="margin-right: 10px;">
-        <a [href]="'http://localhost:7007/api/Comments/GetCommentPicture/' + i" target="_blank">
+    <div class="image-container">
+      <div *ngFor="let i of commentPicturesIds" style="margin-right: 10px; display: inline-block; position: relative;" class="image-wrapper">
+        <a [href]="'http://localhost:7007/api/Comments/GetCommentPicture/' + i" target="_blank" style="display: inline-block;">
           <img [src]="'http://localhost:7007/api/Comments/GetCommentPicture/' + i" alt="Comment Picture" width="auto" height="75px">
         </a>
-      </span>
+        <button *ngIf="isAuthor" class="delete-button" (click)="deletePicture(i)" style="position: absolute; top: 0; right: 0;">X</button>
+      </div>
     </div>
-  </div>
+    
+    
 
   <!-- Nombreux boutons pour modifier le commentaire (votes, signalement, modification, etc.) -->
   <div class="postFooter">

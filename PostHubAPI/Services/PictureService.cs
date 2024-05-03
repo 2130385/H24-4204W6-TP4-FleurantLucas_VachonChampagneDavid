@@ -58,8 +58,6 @@ namespace PostHubAPI.Services
             Picture? picture = await _context.Pictures.FindAsync(id);
             if(picture == null) { return null; }
             return picture;
-            //byte[] bytes = System.IO.File.ReadAllBytes(Directory.GetCurrentDirectory() + "/images/original/" + picture.FileName);
-            //return File(bytes, picture.MimeType);
         }
 
         public async Task<Picture?> DeletePicture(int pictureId)
@@ -68,24 +66,13 @@ namespace PostHubAPI.Services
             Picture? picture = await _context.Pictures.FindAsync(pictureId);
             if (picture == null) { return null; }
             _context.Pictures.Remove(picture);
-            if(File.Exists(Directory.GetCurrentDirectory() + "/images/original/" + picture.FileName + picture.MimeType))
+            string filepath = Directory.GetCurrentDirectory() + "\\images\\original\\" + picture.FileName;
+            if (File.Exists(filepath))
             {
-                File.Delete(Directory.GetCurrentDirectory() + "/images/original/" + picture.FileName + picture.MimeType);
+                File.Delete(filepath);
             }
             await _context.SaveChangesAsync();
             return picture;
         }
     }
-    //if (IsContextNull())
-    //{
-    //    return null;
-    //}
-    //Picture? birb = await _context.Pictures.FindAsync(id);
-    //if (birb == null || birb.FileName == null || birb.MimeType == null)
-    //{
-    //    return NotFound(new { Message = "Ce birb n'existe pas ou n'a pas de photo. " });
-    //}
-
-    //byte[] bytes = System.IO.File.ReadAllBytes(Directory.GetCurrentDirectory() + "/images/" + "/original/" +
-    //return File(bytes, birb.MimeType);
 }

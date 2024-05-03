@@ -35,10 +35,14 @@
       <div *ngIf="listImageIds.length > 4">
         <app-carrousel [imagesIds]="listImageIds"></app-carrousel>
       </div>
-      <div *ngIf="listImageIds.length <= 4">
-        <img *ngFor="let i of listImageIds" [src]="'http://localhost:7007/api/Comments/GetCommentPicture/' + i">
+      <div *ngIf="listImageIds.length <= 4" class="image-container">
+        <div *ngFor="let i of listImageIds" class="image-wrapper">
+          <a [href]="'http://localhost:7007/api/Comments/GetCommentPicture/' + i" target="_blank">
+            <img [src]="'http://localhost:7007/api/Comments/GetCommentPicture/' + i">
+          </a>
+          <button *ngIf="isAuthor" class="delete-button" (click)="deletePicture(i)">X</button>
+        </div>
       </div>
-      
     </div>
   </div>
 

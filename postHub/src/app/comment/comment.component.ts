@@ -203,4 +203,12 @@ export class CommentComponent implements OnInit {
     }
   }
 
+  async deletePicture(pictureId: number) {
+    const index = this.commentPicturesIds.indexOf(pictureId);
+    if (index !== -1) {
+      this.postService.deletePicture(pictureId);
+      this.commentPicturesIds.splice(index, 1);
+    }
+  }
+
 }

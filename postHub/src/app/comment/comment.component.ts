@@ -211,4 +211,8 @@ export class CommentComponent implements OnInit {
     }
   }
 
+  async reportComment() {
+    const commentId : any = this.comment?.id;
+    await this.postService.reportComment(commentId);
+  }
 }

@@ -53,19 +53,6 @@ export class FullPostComponent implements OnInit {
     this.isAuthor = localStorage.getItem("username") == this.post?.mainComment?.username;
   }
 
-  // onFileChange(event: any) {
-  //   const files = event.target.files;
-  //   if (files) {
-  //     for (let i = 0; i < files.length; i++) {
-  //       const reader = new FileReader();
-  //       reader.onload = (e: any) => {
-  //         this.selectedImages.push(e.target.result);
-  //       };
-  //       reader.readAsDataURL(files[i]);
-  //     }
-  //   }
-  // }
-
   dataURItoBlob(dataURI: any) {
     const parts = dataURI.split(';base64,');
     const contentType = parts[0].split(':')[1];
@@ -211,4 +198,8 @@ export class FullPostComponent implements OnInit {
     }
   }
 
+  async reportComment() {
+    const commentId : any = this.post?.id;
+    await this.postService.reportComment(commentId);
+  }
 }

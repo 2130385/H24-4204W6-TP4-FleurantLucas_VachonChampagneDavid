@@ -96,4 +96,7 @@ async getPicturesIds(commentId : number) : Promise<number[]>{
     let x = await lastValueFrom(this.http.delete<any>("http://localhost:7007/api/Comments/DeletePicture/" + pictureId));
   }
 
+  async reportComment(commentId:number){
+    let x = await lastValueFrom(this.http.put<any>("http://localhost:7007/api/Comments/ReportComment/" + commentId, commentId));
+  }
 }

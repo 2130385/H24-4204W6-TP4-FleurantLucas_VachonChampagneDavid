@@ -38,5 +38,7 @@ namespace PostHubAPI.Models
             }
             return total;
         }
+
+        public bool IsReported { get; set; }
     }
 }

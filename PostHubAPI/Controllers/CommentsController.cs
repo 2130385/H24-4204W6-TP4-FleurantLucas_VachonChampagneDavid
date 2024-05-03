@@ -374,16 +374,24 @@ namespace PostHubAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        [AllowAnonymous]
         public async Task<ActionResult> DeletePicture(int id)
         {
-            //Picture picture = await _pictureService.GetCommentPicture(id);
-            //Comment comment = await _commentService.GetComment(picture.Comment.Id);
-            //List<Picture> pictures = comment.Pictures;
-            //pictures.Remove(picture);
-            //_commentService.EditComment(comment);
             await _pictureService.DeletePicture(id);
             return Ok();
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult> ReportComment(int id)
+        {
+            if (id != null)
+            {
+                await _commentService.ReportComment(id);
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
         }
 
         private static IEnumerable<Post> GetPopularPosts(Hub hub, int qty)

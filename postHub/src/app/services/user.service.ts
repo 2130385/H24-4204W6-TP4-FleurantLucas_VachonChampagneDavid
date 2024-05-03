@@ -39,4 +39,7 @@ export class UserService {
     localStorage.setItem("username", x.username);
   }
 
+  async uploadProfilePicture(username: any, formData : any){
+    let x = await lastValueFrom(this.http.post<any>("http://localhost:7007/api/Users/ChangeProfilePicture/" + username, formData));
+  }
 }

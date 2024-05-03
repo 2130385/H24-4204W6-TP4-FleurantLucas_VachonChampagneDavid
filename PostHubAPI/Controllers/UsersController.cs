@@ -7,6 +7,7 @@ using NuGet.Protocol.Plugins;
 using PostHubAPI.Models;
 using PostHubAPI.Models.DTOs;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -80,6 +81,50 @@ namespace PostHubAPI.Controllers
             {
                 return StatusCode(StatusCodes.Status400BadRequest,
                     new { Message = "Le nom d'utilisateur ou le mot de passe est invalide." });
+            }
+        }
+
+        [HttpPost("{username}")]
+        public async Task<ActionResult> ChangeProfilePicture(string username)
+        {
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                return NotFound("Utilisateur non trouvé");
+            }
+
+            var file = Request.Form.Files.FirstOrDefault();
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("Aucun fichier sélectionné");
+            }
+            else
+            {
+                Image image = Image.Load(file.OpenReadStream());
+                user.FileName = file.FileName;
+                user.MimeType = file.ContentType;
+                await _userManager.UpdateAsync(user);
+                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "images", "original", file.FileName);
+                using (var outputStream = new FileStream(imagePath, FileMode.Create))
+                {
+                    image.Save(outputStream, new PngEncoder());
+                }
+                return Ok();
+            }
+        }
+
+        [HttpGet("{username}")]
+        public async Task<ActionResult> GetProfilePicture(string username)
+        {
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                return NotFound("Utilisateur non trouvé");
+            }
+            else
+            {
+                byte[] bytes = System.IO.File.ReadAllBytes(Directory.GetCurrentDirectory() + "/images/original/" + user.FileName);
+                return File(bytes, user.MimeType);
             }
         }
     }

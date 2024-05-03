@@ -202,4 +202,5 @@ export class FullPostComponent implements OnInit {
     await this.postService.deleteComment(this.post.mainComment.id);
     this.router.navigate(["/"]);
   }
+  
 }

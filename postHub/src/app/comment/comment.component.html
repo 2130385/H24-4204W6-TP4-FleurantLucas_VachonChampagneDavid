@@ -21,7 +21,9 @@
     <!-- Des images pourraient être affichées ici... -->
     <div style="display: flex; align-items: center;">
       <span *ngFor="let i of commentPicturesIds" style="margin-right: 10px;">
-        <img [src]="'http://localhost:7007/api/Comments/GetCommentPicture/' + i" alt="Comment Picture" width="auto" height="75px">
+        <a [href]="'http://localhost:7007/api/Comments/GetCommentPicture/' + i" target="_blank">
+          <img [src]="'http://localhost:7007/api/Comments/GetCommentPicture/' + i" alt="Comment Picture" width="auto" height="75px">
+        </a>
       </span>
     </div>
   </div>

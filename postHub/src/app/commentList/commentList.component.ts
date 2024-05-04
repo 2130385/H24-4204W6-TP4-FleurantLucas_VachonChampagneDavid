@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { PostService } from '../services/post.service';
 import { Comment } from '../models/comment';
+import { Routes } from '@angular/router';
 
 @Component({
   selector: 'app-commentList',
@@ -15,6 +16,7 @@ export class CommentListComponent implements OnInit {
 
   async ngOnInit() {
     // On doit remplir la liste commentList ici avec tous les commentaires signalés !
+    this.commentList = await this.postService.getReportedComments();
   }
 
   async deleteComment(comment : Comment){

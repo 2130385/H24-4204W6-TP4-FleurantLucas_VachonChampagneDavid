@@ -99,4 +99,10 @@ async getPicturesIds(commentId : number) : Promise<number[]>{
   async reportComment(commentId:number){
     let x = await lastValueFrom(this.http.put<any>("http://localhost:7007/api/Comments/ReportComment/" + commentId, commentId));
   }
+
+  async getReportedComments(): Promise<Comment[]>{
+    let x = await lastValueFrom(this.http.get<any>("http://localhost:7007/api/Comments/GetReportedComments"));
+    console.log(x);
+    return x;
+  }
 }

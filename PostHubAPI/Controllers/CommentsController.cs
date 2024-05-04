@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Composition;
@@ -77,12 +78,12 @@ namespace PostHubAPI.Controllers
 
             Comment? mainComment = await _commentService.CreateComment(user, text, pictures, null);
             if (mainComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
-            
+
             //Ajout des images//
             //List<Picture>? picturesReturn = await _pictureService.AddPicturesAsync(pictures, mainComment);
             //if (picturesReturn.Count == 0 && pictures.Count != 0) return StatusCode(StatusCodes.Status500InternalServerError);
 
-            Post ? post = await _postService.CreatePost(title, hub, mainComment);
+            Post? post = await _postService.CreatePost(title, hub, mainComment);
             if (post == null) return StatusCode(StatusCodes.Status500InternalServerError);
 
             bool voteToggleSuccess = await _commentService.UpvoteComment(mainComment.Id, user);
@@ -312,12 +313,12 @@ namespace PostHubAPI.Controllers
                 {
                     Post? deletedPost = await _postService.DeletePost(comment.MainCommentOf);
                     List<int>? ids = await _pictureService.GetPicturesIds(comment.Id);
-                    if(ids != null && ids.Count > 0)
-                    foreach (int id in ids)
-                    {
-                        Picture? picture = await _pictureService.DeletePicture(id);
-                        if (picture == null) return StatusCode(StatusCodes.Status500InternalServerError);
-                    }
+                    if (ids != null && ids.Count > 0)
+                        foreach (int id in ids)
+                        {
+                            Picture? picture = await _pictureService.DeletePicture(id);
+                            if (picture == null) return StatusCode(StatusCodes.Status500InternalServerError);
+                        }
                     if (deletedPost == null) return StatusCode(StatusCodes.Status500InternalServerError);
                 }
 
@@ -327,10 +328,10 @@ namespace PostHubAPI.Controllers
                     List<int>? ids = await _pictureService.GetPicturesIds(comment.Id);
                     if (ids != null && ids.Count > 0)
                         foreach (int id in ids)
-                    {
-                        Picture? picture = await _pictureService.DeletePicture(id);
-                        if (picture == null) return StatusCode(StatusCodes.Status500InternalServerError);
-                    }
+                        {
+                            Picture? picture = await _pictureService.DeletePicture(id);
+                            if (picture == null) return StatusCode(StatusCodes.Status500InternalServerError);
+                        }
                     if (deletedComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
                 }
                 else
@@ -339,11 +340,11 @@ namespace PostHubAPI.Controllers
                     List<int>? ids = await _pictureService.GetPicturesIds(comment.Id);
                     if (ids != null && ids.Count > 0)
                         foreach (int id in ids)
-                    {
-                        Picture? picture = await _pictureService.DeletePicture(id);
-                        if (picture == null) return StatusCode(StatusCodes.Status500InternalServerError);
-                    }
-                    
+                        {
+                            Picture? picture = await _pictureService.DeletePicture(id);
+                            if (picture == null) return StatusCode(StatusCodes.Status500InternalServerError);
+                        }
+
                     if (deletedComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
                     break;
                 }
@@ -356,10 +357,10 @@ namespace PostHubAPI.Controllers
         }
 
         [HttpGet("{CommentId}")]
-        public async Task<ActionResult<List<int>>> GetPicturesIds (int CommentId)
+        public async Task<ActionResult<List<int>>> GetPicturesIds(int CommentId)
         {
             List<int>? ids = await _pictureService.GetPicturesIds(CommentId);
-            if(ids == null) { return new List<int>(); }
+            if (ids == null) { return new List<int>(); }
             return ids;
         }
 
@@ -368,7 +369,7 @@ namespace PostHubAPI.Controllers
         public async Task<ActionResult> GetCommentPicture(int id)
         {
             Picture? picture = await _pictureService.GetCommentPicture(id);
-            if(picture == null) { return NotFound(); }
+            if (picture == null) { return NotFound(); }
             byte[] bytes = System.IO.File.ReadAllBytes(Directory.GetCurrentDirectory() + "/images/original/" + picture.FileName);
             return File(bytes, picture.MimeType);
         }
@@ -404,6 +405,11 @@ namespace PostHubAPI.Controllers
             return hub.Posts!.OrderByDescending(p => p.MainComment?.Date).Take(qty);
         }
 
-
+        [HttpGet]
+        [Authorize(Roles = "Moderator")]
+        public async Task<IEnumerable<Comment>?> GetReportedComments()
+        {
+            return await _commentService.GetReportedComments();
+        }
     }
 }

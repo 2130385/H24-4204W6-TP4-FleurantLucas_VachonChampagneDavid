@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PostHubAPI.Data;
 using PostHubAPI.Models;
+using System.Xml.Linq;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace PostHubAPI.Services
@@ -140,6 +141,11 @@ namespace PostHubAPI.Services
             comment.IsReported = true;
             await _context.SaveChangesAsync();
             return comment;
+        }
+
+        public async Task<IEnumerable<Comment>?> GetReportedComments()
+        {    
+            return await _context.Comments.Where(c => c.IsReported).ToListAsync();
         }
 
         private bool IsContextNull() => _context.Comments == null;

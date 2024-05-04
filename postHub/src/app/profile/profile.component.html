@@ -19,4 +19,7 @@
     <img [src]="'http://localhost:7007/api/Users/GetProfilePicture/' + username" style="max-width: 200px;">
     <input type="file" accept="images/*" (change)="onFileSelected($event)">
   </div>
+
+  <button [routerLink]="'/reports'">Commentaires signalés</button>
+
 </div>

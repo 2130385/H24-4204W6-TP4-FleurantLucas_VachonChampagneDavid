@@ -92,6 +92,15 @@ namespace PostHubAPI.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "ce22f252-b06a-4149-93c4-ef42a80c1fcc",
+                            ConcurrencyStamp = "df11cc11-8de3-491c-90ee-508332fd0b11",
+                            Name = "Moderator",
+                            NormalizedName = "MODERATOR"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -179,6 +188,13 @@ namespace PostHubAPI.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = "4e743245-6931-4d50-b3d0-597d9bd9dba2",
+                            RoleId = "ce22f252-b06a-4149-93c4-ef42a80c1fcc"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -373,6 +389,24 @@ namespace PostHubAPI.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "4e743245-6931-4d50-b3d0-597d9bd9dba2",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "355d6e09-f1ee-4f01-834c-e80d3e458a47",
+                            Email = "moderator@gmail.com",
+                            EmailConfirmed = false,
+                            LockoutEnabled = false,
+                            NormalizedEmail = "MODERATOR@GMAIL.COM",
+                            NormalizedUserName = "MODERATOR",
+                            PasswordHash = "AQAAAAEAACcQAAAAEIv/JZ3BzftZQo/+n5/IJYgYbMAs501SBi7LUZGZf/tJLHhm67n4rt9FQ+I475e5fA==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "04e3b845-72f3-49f2-9d6c-b942c001ea7c",
+                            TwoFactorEnabled = false,
+                            UserName = "moderator"
+                        });
                 });
 
             modelBuilder.Entity("CommentUser", b =>

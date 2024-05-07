@@ -81,21 +81,11 @@
   <div id="commentBox">
     <input type="text" name="newComment" id="newComment" placeholder="Ajouter un commentaire" [(ngModel)]="newComment">
     <div *ngIf="displayInputFile" class="commentPictureAdd">
-      <!-- <input type="file" accept="image/*" (change)="onFileChange($event)" #fileInput multiple> -->
       <input #myPictureViewChild type="file" name="image" accept="images/*" multiple>
-      <!-- <span *ngIf="selectedImages.length > 0">{{ selectedImages.length }} file(s) selected</span> -->
     </div>
     <button (click)="displayInputFile = !displayInputFile"><fa-icon [icon]="faImage"></fa-icon></button>
     <button (click)="createComment()">Ajouter</button>
   </div>
-  <!-- <div id="newComment" *ngIf="selectedImages.length"> -->
-    <!-- <h2>Selected Images</h2>
-    <div style="display: flex; align-items: center;">
-      <span *ngFor="let image of selectedImages" style="margin-right: 10px;">
-        <img [src]="image" alt="Uploaded Image" width="200px" height="auto">
-      </span>
-    </div> -->
-  <!-- </div> -->
 
   <!-- Liste de commentaires -->
   <div class="comment" *ngFor="let c of post.mainComment!.subComments">

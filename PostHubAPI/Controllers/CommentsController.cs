@@ -301,7 +301,7 @@ namespace PostHubAPI.Controllers
             Comment? comment = await _commentService.GetComment(commentId);
             if (comment == null) return NotFound();
 
-            if (user == null || comment.User != user) return Unauthorized();
+            if (user == null || !User.HasClaim(c => c.Type == ClaimTypes.Role && c.Value == "Moderator")  && comment.User != user) return Unauthorized();
 
             do
             {
@@ -407,7 +407,7 @@ namespace PostHubAPI.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Moderator")]
-        public async Task<IEnumerable<Comment>?> GetReportedComments()
+        public async Task<IEnumerable<CommentDisplayDTO>?> GetReportedComments()
         {
             return await _commentService.GetReportedComments();
         }

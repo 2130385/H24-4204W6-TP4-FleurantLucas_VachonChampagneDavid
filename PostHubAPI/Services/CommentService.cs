@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PostHubAPI.Data;
 using PostHubAPI.Models;
+using PostHubAPI.Models.DTOs;
 using System.Xml.Linq;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
@@ -143,9 +144,23 @@ namespace PostHubAPI.Services
             return comment;
         }
 
-        public async Task<IEnumerable<Comment>?> GetReportedComments()
+        public async Task<IEnumerable<CommentDisplayDTO>?> GetReportedComments()
         {    
-            return await _context.Comments.Where(c => c.IsReported).ToListAsync();
+            var x = await _context.Comments.Where(c => c.IsReported).Select(c => new CommentDisplayDTO
+            {
+                Id = c.Id,
+                Text = c.Text,
+                Date = c.Date,
+                Username = c.User.UserName,
+                Upvotes = c.Upvoters.Count,
+                Downvotes = c.Downvoters.Count,
+                Upvoted = c.Upvoters!=null,
+                Downvoted = c.Downvoters!=null,
+                SubCommentTotal = c.SubComments.Count,
+                SubComments = null
+            }).ToListAsync();
+            return x;
+
         }
 
         private bool IsContextNull() => _context.Comments == null;

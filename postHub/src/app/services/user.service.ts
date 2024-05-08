@@ -42,4 +42,15 @@ export class UserService {
   async uploadProfilePicture(username: any, formData : any){
     let x = await lastValueFrom(this.http.post<any>("http://localhost:7007/api/Users/ChangeProfilePicture/" + username, formData));
   }
+
+  async changePassword(oldPassword : string, newPassword : string, passwordConfirm : string) : Promise<void>{
+    let dto = {
+      oldPassword : oldPassword,
+      newPassword : newPassword,
+      confirmPassword : passwordConfirm
+    };
+
+    let x = await lastValueFrom(this.http.post<any>("http://localhost:7007/api/Users/ChangePassword", dto));
+    console.log(x);
+  }
 }

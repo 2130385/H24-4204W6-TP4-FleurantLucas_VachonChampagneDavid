@@ -25,9 +25,13 @@ namespace PostHubAPI.Data
 
             var roleId = Guid.NewGuid().ToString();
             var userId = Guid.NewGuid().ToString();
+            var roleId2 = Guid.NewGuid().ToString();
+            var userId2 = Guid.NewGuid().ToString();
 
             modelBuilder.Entity<IdentityRole>().HasData(new IdentityRole { Id=roleId, Name = "Moderator", NormalizedName = "Moderator".ToUpper() });
             modelBuilder.Entity<User>().HasData(new User { Id=userId, Email="moderator@gmail.com", NormalizedEmail="MODERATOR@GMAIL.COM", UserName="moderator", NormalizedUserName="MODERATOR", PasswordHash=passwordHasher.HashPassword(null, "password") });
+            modelBuilder.Entity<IdentityRole>().HasData(new IdentityRole { Id = roleId2, Name = "Administrator", NormalizedName = "Administrator".ToUpper() });
+            modelBuilder.Entity<User>().HasData(new User { Id = userId2, Email = "ADMIN@gmail.com", NormalizedEmail = "ADMIN@GMAIL.COM", UserName = "admin", NormalizedUserName = "ADMIN", PasswordHash = passwordHasher.HashPassword(null, "password") });
             modelBuilder.Entity<IdentityUserRole<string>>().HasData(new IdentityUserRole<string>
             {
                 RoleId = roleId,

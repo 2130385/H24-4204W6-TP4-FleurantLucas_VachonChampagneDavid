@@ -52,6 +52,10 @@ namespace PostHubAPI.Controllers
         public async Task<ActionResult> Login(LoginDTO login)
         {
             User user = await _userManager.FindByNameAsync(login.Username);
+            if(user == null)
+            {
+                user = await _userManager.FindByEmailAsync(login.Username);
+            }
             if (user != null && await _userManager.CheckPasswordAsync(user, login.Password))
             {
                 IList<string> roles = await _userManager.GetRolesAsync(user);
@@ -125,6 +129,27 @@ namespace PostHubAPI.Controllers
             {
                 byte[] bytes = System.IO.File.ReadAllBytes(Directory.GetCurrentDirectory() + "/images/original/" + user.FileName);
                 return File(bytes, user.MimeType);
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<ActionResult> ChangePassword(ChangePasswordDTO changePassword)
+        {
+            User? user = await _userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            if (user == null)
+            {
+                return NotFound("Utilisateur non trouvé");
+            }
+
+            var result = await _userManager.ChangePasswordAsync(user, changePassword.OldPassword, changePassword.NewPassword);
+            if (result.Succeeded)
+            {
+                return Ok(new { Message = "Mot de passe modifié avec succès" });
+            }
+            else
+            {
+                return BadRequest(result.Errors);
             }
         }
     }

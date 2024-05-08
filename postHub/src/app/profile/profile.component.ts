@@ -42,4 +42,8 @@ export class ProfileComponent implements OnInit {
       console.error('Erreur lors du changement de la photo de profil :', error);
     }
   }
+
+  async changepassword() : Promise<void> {
+    await this.userService.changePassword(this.oldPassword, this.newPassword, this.newPasswordConfirm);
+  }
 }

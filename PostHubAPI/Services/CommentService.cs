@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using PostHubAPI.Data;
 using PostHubAPI.Models;
+using PostHubAPI.Models.DTOs;
+using System.Xml.Linq;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace PostHubAPI.Services
@@ -21,7 +23,7 @@ namespace PostHubAPI.Services
             return await _context.Comments.FindAsync(id);
         }
 
-        public async Task<Comment?> CreateComment(User user, string text, Comment? parentComment)
+        public async Task<Comment?> CreateComment(User user, string text, List<Picture> pictures, Comment? parentComment)
         {
             if (IsContextNull()) return null;
 
@@ -32,6 +34,7 @@ namespace PostHubAPI.Services
                 Date = DateTime.UtcNow,
                 User = user, // Auteur
                 ParentComment = parentComment, // null si commentaire principal du post
+                Pictures = pictures
             };
 
             _context.Comments.Add(newComment);
@@ -40,9 +43,16 @@ namespace PostHubAPI.Services
             return newComment;
         }
 
-        public async Task<Comment?> EditComment(Comment comment, string text)
+        public async Task<Comment?> EditComment(Comment comment, string text, List<Picture> newPictures)
         {
             comment.Text = text;
+            if(newPictures.Count > 0)
+            {
+                foreach (Picture picture in newPictures)
+                {
+                    comment.Pictures.Add(picture);
+                }
+            }
             await _context.SaveChangesAsync();
 
             return comment;
@@ -54,11 +64,11 @@ namespace PostHubAPI.Services
             deletedComment.User = null;
             deletedComment.Upvoters ??= new List<User>();
             deletedComment.Downvoters ??= new List<User>();
-            foreach(User u in deletedComment.Upvoters)
+            foreach (User u in deletedComment.Upvoters)
             {
                 u.Upvotes?.Remove(deletedComment);
             }
-            foreach(User u in deletedComment.Downvoters)
+            foreach (User u in deletedComment.Downvoters)
             {
                 u.Downvotes?.Remove(deletedComment);
             }
@@ -72,7 +82,7 @@ namespace PostHubAPI.Services
         {
             deletedComment.SubComments ??= new List<Comment>();
 
-            for(int i = deletedComment.SubComments.Count - 1; i >= 0; i--)
+            for (int i = deletedComment.SubComments.Count - 1; i >= 0; i--)
             {
                 Comment? deletedSubComment = await HardDeleteComment(deletedComment.SubComments[i]);
                 if (deletedSubComment == null) return null;
@@ -124,6 +134,33 @@ namespace PostHubAPI.Services
             await _context.SaveChangesAsync();
 
             return true; // Basculement du downvote réussi
+        }
+
+        public async Task<Comment?> ReportComment(int id)
+        {
+            Comment comment = await _context.Comments.FindAsync(id);
+            comment.IsReported = true;
+            await _context.SaveChangesAsync();
+            return comment;
+        }
+
+        public async Task<IEnumerable<CommentDisplayDTO>?> GetReportedComments()
+        {    
+            var x = await _context.Comments.Where(c => c.IsReported).Select(c => new CommentDisplayDTO
+            {
+                Id = c.Id,
+                Text = c.Text,
+                Date = c.Date,
+                Username = c.User.UserName,
+                Upvotes = c.Upvoters.Count,
+                Downvotes = c.Downvoters.Count,
+                Upvoted = c.Upvoters!=null,
+                Downvoted = c.Downvoters!=null,
+                SubCommentTotal = c.SubComments.Count,
+                SubComments = null
+            }).ToListAsync();
+            return x;
+
         }
 
         private bool IsContextNull() => _context.Comments == null;

@@ -16,6 +16,7 @@ import { EditPostComponent } from './editPost/editPost.component';
 import { FormsModule } from '@angular/forms';
 import { AuthInterceptor } from './auth.interceptor';
 import { NewHubComponent } from './newHub/newHub.component';
+import { CarrouselComponent } from './carrousel/carrousel.component';
 
 import { registerLocaleData } from '@angular/common';
 import localeFr from '@angular/common/locales/fr';
@@ -37,7 +38,8 @@ registerLocaleData(localeFr, "fr");
       CommentComponent,
       EditPostComponent,
       NewHubComponent,
-      CommentListComponent
+      CommentListComponent,
+      CarrouselComponent
    ],
   imports: [
     BrowserModule,

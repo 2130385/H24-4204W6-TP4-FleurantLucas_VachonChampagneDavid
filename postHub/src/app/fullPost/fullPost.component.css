@@ -213,3 +213,19 @@
     width:20px;
     cursor:pointer;
 }
+
+.image-container {
+    position: relative;
+  }
+  
+  .image-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .delete-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+  

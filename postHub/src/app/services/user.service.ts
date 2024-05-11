@@ -19,7 +19,7 @@ export class UserService {
       passwordConfirm : passwordConfirm
     };
 
-    let x = await lastValueFrom(this.http.post<any>("https://localhost:7007/api/Users/Register", registerDTO));
+    let x = await lastValueFrom(this.http.post<any>("http://localhost:7007/api/Users/Register", registerDTO));
     console.log(x);
   }
 
@@ -31,7 +31,7 @@ export class UserService {
       password : password
     };
 
-    let x = await lastValueFrom(this.http.post<any>("https://localhost:7007/api/Users/Login", loginDTO));
+    let x = await lastValueFrom(this.http.post<any>("http://localhost:7007/api/Users/Login", loginDTO));
     console.log(x);
 
     // N'hésitez pas à ajouter d'autres infos dans le stockage local... pourrait vous aider pour la partie admin / modérateur
@@ -39,4 +39,18 @@ export class UserService {
     localStorage.setItem("username", x.username);
   }
 
+  async uploadProfilePicture(username: any, formData : any){
+    let x = await lastValueFrom(this.http.post<any>("http://localhost:7007/api/Users/ChangeProfilePicture/" + username, formData));
+  }
+
+  async changePassword(oldPassword : string, newPassword : string, passwordConfirm : string) : Promise<void>{
+    let dto = {
+      oldPassword : oldPassword,
+      newPassword : newPassword,
+      confirmPassword : passwordConfirm
+    };
+
+    let x = await lastValueFrom(this.http.post<any>("http://localhost:7007/api/Users/ChangePassword", dto));
+    console.log(x);
+  }
 }

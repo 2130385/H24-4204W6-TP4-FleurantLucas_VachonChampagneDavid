@@ -7,6 +7,7 @@ using NuGet.Protocol.Plugins;
 using PostHubAPI.Models;
 using PostHubAPI.Models.DTOs;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -51,6 +52,10 @@ namespace PostHubAPI.Controllers
         public async Task<ActionResult> Login(LoginDTO login)
         {
             User user = await _userManager.FindByNameAsync(login.Username);
+            if(user == null)
+            {
+                user = await _userManager.FindByEmailAsync(login.Username);
+            }
             if (user != null && await _userManager.CheckPasswordAsync(user, login.Password))
             {
                 IList<string> roles = await _userManager.GetRolesAsync(user);
@@ -63,7 +68,7 @@ namespace PostHubAPI.Controllers
                 SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8
                     .GetBytes("LooOOongue Phrase SiNoN Ça ne Marchera PaAaAAAaAas !"));
                 JwtSecurityToken token = new JwtSecurityToken(
-                    issuer: "https://localhost:7007",
+                    issuer: "http://localhost:7007",
                     audience: "http://localhost:4200",
                     claims: authClaims,
                     expires: DateTime.Now.AddMinutes(300),
@@ -80,6 +85,71 @@ namespace PostHubAPI.Controllers
             {
                 return StatusCode(StatusCodes.Status400BadRequest,
                     new { Message = "Le nom d'utilisateur ou le mot de passe est invalide." });
+            }
+        }
+
+        [HttpPost("{username}")]
+        public async Task<ActionResult> ChangeProfilePicture(string username)
+        {
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                return NotFound("Utilisateur non trouvé");
+            }
+
+            var file = Request.Form.Files.FirstOrDefault();
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("Aucun fichier sélectionné");
+            }
+            else
+            {
+                Image image = Image.Load(file.OpenReadStream());
+                user.FileName = file.FileName;
+                user.MimeType = file.ContentType;
+                await _userManager.UpdateAsync(user);
+                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "images", "original", file.FileName);
+                using (var outputStream = new FileStream(imagePath, FileMode.Create))
+                {
+                    image.Save(outputStream, new PngEncoder());
+                }
+                return Ok();
+            }
+        }
+
+        [HttpGet("{username}")]
+        public async Task<ActionResult> GetProfilePicture(string username)
+        {
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                return NotFound("Utilisateur non trouvé");
+            }
+            else
+            {
+                byte[] bytes = System.IO.File.ReadAllBytes(Directory.GetCurrentDirectory() + "/images/original/" + user.FileName);
+                return File(bytes, user.MimeType);
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<ActionResult> ChangePassword(ChangePasswordDTO changePassword)
+        {
+            User? user = await _userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            if (user == null)
+            {
+                return NotFound("Utilisateur non trouvé");
+            }
+
+            var result = await _userManager.ChangePasswordAsync(user, changePassword.OldPassword, changePassword.NewPassword);
+            if (result.Succeeded)
+            {
+                return Ok(new { Message = "Mot de passe modifié avec succès" });
+            }
+            else
+            {
+                return BadRequest(result.Errors);
             }
         }
     }

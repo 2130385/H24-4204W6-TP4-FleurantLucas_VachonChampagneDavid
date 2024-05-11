@@ -1,0 +1,22 @@
+.arrow {
+    background: gray;
+    border-radius: 25px;
+    height: 50px;
+    width: 50px;
+    display: flex;
+    border: none;
+}
+.image-container {
+    position: relative;
+  }
+  
+  .image-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .delete-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
